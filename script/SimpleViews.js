@@ -42,6 +42,10 @@ const textView = new ViewDefinition({
   get: view => view.inputElement.value,
   set: (view, value) => view.inputElement.value = value,
 
+  setProp: (view, prop, value) => !!value
+    ? view.inputElement.setAttribute(prop, '')
+    : view.inputElement.removeAttribute(prop),
+
   attach: view => {
     view.inputElement = view.element.querySelector('input');
     view.inputElement.addEventListener('input', view.eventListener);

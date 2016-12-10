@@ -36,6 +36,8 @@ class ViewDefinition {
     view.setValue = vd.set || noOp;
     view.attachElement = vd.attach || noOp;
     view.detachElement = vd.detach || noOp;
+    view.enable = vd.setProp ? ()=>vd.setProp(view, 'disabled', true) : noOp;
+    view.disable = vd.setProp ? ()=>vd.setProp(view, 'disabled', false) : noOp;
 
     view.construct(view);
     eventBinding && view.setEventBinding(eventBinding);
