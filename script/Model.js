@@ -25,7 +25,7 @@ class Model extends EventSource {
 
   addMethodProperty(key, get, set, dependencies=[]){
     Object.defineProperty(this, key, {
-      enumerable: false,
+      enumerable: true,
       configurable: false,
       get() {
         console.assert(get, `A get method was not provided for ${key} in `, this);
@@ -45,11 +45,17 @@ class Model extends EventSource {
 
   getPath() {
     const parentModel = this[parent];
-    return parentModel ? [...parentModel.modelBinding.getPath(), parentModel.key] : [];
+    return parentModel ? [...parentModel.model.getPath(), parentModel.key] : [];
   }
 
-  setPath(modelBinding, key) {
-    this[parent] = {modelBinding, key};
+  getParent() {
+    return this[parent]
+      ? {model: this[parent].model, key: this[parent].key}
+      : {};
+  }
+
+  setPath(model, key) {
+    this[parent] = {model, key};
   }
 
   attachProperties(object){
@@ -85,9 +91,14 @@ class EventBinding {
     return this.signal;
   }
 
+  getKey() {
+    return this.signal;
+  }
+
+
   getPath(){
     const modelPath = this.model.getPath();
-    return [...modelPath, `<${this.signal}>`];
+    return [...modelPath, this.getKey()];
   }
 
   setModel({model, signal}){
@@ -112,6 +123,10 @@ class ModelBinding {
     return this.mapper(value);
   }
 
+  getKey() {
+    return this.key;
+  }
+
   listen(onChange) {
     this.__detachListeners();
 
@@ -126,7 +141,7 @@ class ModelBinding {
 
   getPath(){
     const modelPath = this.model.getPath();
-    return [...modelPath, this.key];
+    return [...modelPath, this.getKey()];
   }
 
   setModel({model, key, mapper, triggerEvent = true}={}){

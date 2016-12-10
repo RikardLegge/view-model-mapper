@@ -18,10 +18,36 @@ html, body{
     font-family: monospace;
     text-align: center;
 }
+.eventEditorText{
+    width: 100%;
+    left:0;
+    position: absolute;
+    bottom: 25px;
+}
+.eventEditorText__input{
+    width: 100%;
+    line-height: 18px;
+    font-size: 18px;
+    font-family: monospace;
+    text-align: center;
+}
 .modelEditorLabel {
-    bottom: 30px;
+    bottom: 60px;
     position: absolute;
     width: 100%;
     font-family: monospace;
     text-align: center;
+}
+
+.callstack__containerLabel {
+    position: relative;
+    width: 100%;
+    height: 10em;
+    overflow: auto;
+    border-top: 1px solid lightgray;
+}
+
+.callstackLabel {
+    width: 100%;
+    font-family: monospace;
 }
