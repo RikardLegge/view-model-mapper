@@ -48,7 +48,7 @@ const labelContainer = ViewFactory.create('label', {}, { name: 'callstack__conta
 ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'log', a=>a.join('<br>'))}, { name: 'callstack' }, {target: labelContainer.element});
 
 applicationState.listen('*', (key, value, state)=> key !== 'log' && key !== 'frameCount' &&
-  (state.log = [...state.log, `${key} => ${value}`]));
+  (state.log = [...state.log, `<b>${key}</b> => ${value}`]));
 
 // Create the UI editor
 
@@ -98,7 +98,7 @@ function bindingEditor() {
 
     editorModel.suggestions = paths
       .filter(path=>path.map(path => path.key).join('.').indexOf(targetPath) === 0)
-      .map(path=>path.map(path => path.key).join('.') + ' => ' + path[path.length-1].model[path[path.length-1].key]);
+      .map(path=>path.map(path => `<b>${path.key}</b>`).join('.') + ` => ${path[path.length-1].model[path[path.length-1].key]}`);
 
     const textPaths = paths.map(path=>path.map(path => path.key).join('.'));
     const index = textPaths.findIndex(path => path === targetPath);
