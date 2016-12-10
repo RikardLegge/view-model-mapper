@@ -80,10 +80,10 @@ function bindingEditor() {
 
   function updateEventBinding(){
     if (!editorModel.target || !editorModel.target.eventBinding) {
-      modelInput.disable();
+      eventInput.disable();
       return;
     }
-    modelInput.enable();
+    eventInput.enable();
 
     const signal = editorModel.eventText;
     editorModel.target.eventBinding.setModel({signal});
@@ -95,7 +95,7 @@ function bindingEditor() {
       modelInput.disable();
       return;
     }
-    eventInput.enable();
+    modelInput.enable();
 
     const targetPath = editorModel.modelText;
     const paths = ReflectModel.getPaths(applicationState);
