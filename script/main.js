@@ -9,14 +9,16 @@ const buttonState = new Model({
 
 const applicationState = new Model({
   button: buttonState,
-  frameCount: 0
+  frameCount: 0,
+  counter: 1
 });
 
 applicationState.attachProperties({
   doubleCounter: data => data.counter * 2,
   trippleCounter: {
     get: data => data.counter * 3,
-    set: (data, value) => data.counter = value / 3
+    set: (data, value) => data.counter = value / 3,
+    dependencies: ['counter']
   }
 });
 
@@ -27,13 +29,19 @@ requestAnimationFrame(function frame(){
 
 // Construct UI
 
-ViewFactory.create('checkbox', new ModelBinding(applicationState.button, 'pressed'), {}, {target: document.body});
-ViewFactory.create('checkbox', new ModelBinding(applicationState.button, 'pressed', v=>!v), {}, {target: document.body});
-ViewFactory.create('label', new ModelBinding(applicationState.button, 'pressed'), {}, {target: document.body});
-ViewFactory.create('label', new ModelBinding(applicationState.button, 'pressed', v=>!v), {}, {target: document.body});
-ViewFactory.create('text', new ModelBinding(applicationState.button, 'pressed'), {}, {target: document.body});
+ViewFactory.create('checkbox', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
+ViewFactory.create('checkbox', {modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v)}, {}, {target: document.body});
+ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
+ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v)}, {}, {target: document.body});
+ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
 
-ViewFactory.create('label', new ModelBinding(applicationState.button, 'exampleText'), {}, {target: document.body});
+ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'exampleText')}, {}, {target: document.body});
+
+ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'counter')}, {}, {target: document.body});
+ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'trippleCounter')}, {}, {target: document.body});
+ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState, 'counter')}, {}, {target: document.body});
+ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState, 'trippleCounter')}, {}, {target: document.body});
+ViewFactory.create('button', {eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']++)}, {}, {target: document.body});
 
 // Create the UI editor
 
@@ -46,7 +54,7 @@ function bindingEditor() {
   });
 
   editorModel.listen('target', () => {
-    editorModel.text = editorModel.target ? editorModel.target.modelBinding.getPath().join('.') : '';
+    editorModel.text = editorModel.target && editorModel.target.modelBinding ? editorModel.target.modelBinding.getPath().join('.') : '';
   });
 
   editorModel.listen('text', () => {
@@ -71,8 +79,7 @@ function bindingEditor() {
         return;
       }
 
-      const {model, key} = path.pop();
-      editorModel.target.modelBinding.setModel(model, key);
+      editorModel.target.modelBinding.setModel(path.pop());
       console.log(`Model set to ${fullPath}`);
     }
   });

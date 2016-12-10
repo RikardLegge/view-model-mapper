@@ -12,7 +12,7 @@ const checkboxView = new ViewDefinition({
 });
 
 const buttonView = new ViewDefinition({
-  construct: view => view.eventListener = view.viewChanged.bind(view),
+  construct: view => view.eventListener = view.viewSignal.bind(view),
 
   get: view => view.inputElement.value,
 

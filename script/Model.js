@@ -23,7 +23,7 @@ class Model extends EventSource {
     }
   }
 
-  addMethodProperty(key, get, set){
+  addMethodProperty(key, get, set, dependencies=[]){
     Object.defineProperty(this, key, {
       enumerable: false,
       configurable: false,
@@ -36,6 +36,10 @@ class Model extends EventSource {
         set(this, value);
         this.trigger(key, get(this));
       }
+    });
+
+    dependencies.forEach((dependence)=>{
+      this.listen(dependence, ()=>this.trigger(key, this[key]));
     });
   }
 
@@ -57,12 +61,38 @@ class Model extends EventSource {
         typeof value === 'object' &&
         (typeof value.set === 'function' || typeof value.get === 'function')
       ) {
-        this.addMethodProperty(key, value.get, value.set);
+        this.addMethodProperty(key, value.get, value.set, value.dependencies);
       } else {
         this.addValueProperty(key, value);
       }
     });
 
+  }
+}
+
+class EventBinding {
+  constructor(model, signal, eventHandler){
+    this.model = model;
+    this.signal = signal;
+    this.eventHandler = eventHandler;
+  }
+
+  trigger() {
+    this.eventHandler(this.get(), this.model);
+  }
+
+  get() {
+    return this.signal;
+  }
+
+  getPath(){
+    const modelPath = this.model.getPath();
+    return [...modelPath, `<${this.signal}>`];
+  }
+
+  setModel({model, signal}){
+    this.model = model || this.model;
+    this.signal = signal || this.signal;
   }
 }
 
@@ -82,36 +112,45 @@ class ModelBinding {
     return this.mapper(value);
   }
 
+  listen(onChange) {
+    this.__detachListeners();
+
+    this.onChange = onChange;
+
+    this.__attachListeners();
+  }
+
+  unListen(){
+    this.__detachListeners();
+  }
+
   getPath(){
     const modelPath = this.model.getPath();
     return [...modelPath, this.key];
   }
 
-  listen(onChange) {
-    this.model.unListen(this.key, this.onChange);
+  setModel({model, key, mapper, triggerEvent = true}={}){
+    this.__detachListeners();
 
-    this.onChange = onChange;
-    this.model.listen(this.key, onChange);
-  }
-
-  unListen(){
-    this.model.unListen(this.key, this.onChange);
-  }
-
-  setMapper(mapper){
-    this.mapper = mapper;
-    this.onChange();
-  }
-
-  setModel(model, key){
-    this.unListen();
-
-    this.model = model;
+    this.model = model || this.model;
     this.key = key || this.key;
+    this.mapper = mapper || this.mapper;
 
-    this.listen(this.onChange);
-    this.onChange();
+    this.__attachListeners();
+
+    if(triggerEvent)
+      this.onChange();
   }
+
+  __attachListeners() {
+    this.model.listen(this.key, this.onChange);
+  }
+
+  __detachListeners() {
+    this.model.unListen(this.key, this.onChange);
+  }
+
+
 
 }
 

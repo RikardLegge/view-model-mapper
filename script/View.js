@@ -27,7 +27,7 @@ class ViewDefinition {
     this.viewDefinition = viewDefinition;
   }
 
-  construct(element, binding){
+  construct(element, {eventBinding, modelBinding}={}){
     const vd = this.viewDefinition;
     const view = new View();
 
@@ -38,7 +38,8 @@ class ViewDefinition {
     view.detachElement = vd.detach || noOp;
 
     view.construct(view);
-    view.setModelBinding(binding, false);
+    eventBinding && view.setEventBinding(eventBinding);
+    modelBinding && view.setModelBinding(modelBinding, false);
     view.setElement(element, false);
     view.modelChanged();
 
@@ -63,35 +64,50 @@ class View {
       this.modelChanged();
   }
 
+  setEventBinding(eventBinding){
+    this.eventBinding = eventBinding;
+  }
+
   setModelBinding(modelBinding, triggerChange=true){
     if(this.modelBinding){
-
+      this.modelBinding.unListen();
     }
 
     this.modelBinding = modelBinding;
     this.modelBinding.listen(()=>this.modelChanged());
 
-    if(triggerChange)
+    if(triggerChange) {
       this.modelChanged();
+    }
+  }
+
+  viewSignal(){
+    this.eventBinding.trigger();
   }
 
   viewChanged(){
+    if(!this.modelBinding)
+      return;
+
     this.modelBinding.set(this.getValue(this));
   }
 
   modelChanged(){
+    if(!this.modelBinding)
+      return;
+
     this.setValue(this, this.modelBinding.get());
   }
 
 }
 
 class ViewFactory {
-  static create(type, binding, properties, options={}){
+  static create(type, bindings, properties, options={}){
     const [template, viewDefinition] = ViewFactory.types[type] || [];
 
     if(template){
       const element = template.construct(properties);
-      const view = viewDefinition.construct(element, binding);
+      const view = viewDefinition.construct(element, bindings);
 
       if(options.target){
         options.target.appendChild(element);
