@@ -69,6 +69,9 @@ function bindingEditor() {
 
       editorModel.eventText = eventBinding ? eventBinding.getPath().join('.') : '[EventBinding UNAVAILABLE]';
       editorModel.modelText = modelBinding ? modelBinding.getPath().join('.') : '[ModelBinding UNAVAILABLE]';
+    } else {
+      editorModel.eventText = '';
+      editorModel.modelText = '';
     }
   });
 
@@ -88,6 +91,7 @@ function bindingEditor() {
 
   function updateModelBinding(){
     if (!editorModel.target || !editorModel.target.modelBinding) {
+      editorModel.suggestions = [];
       modelInput.disable();
       return;
     }
@@ -126,7 +130,16 @@ function bindingEditor() {
   });
 
   function findViewInPath(path) {
-    return path.find(element => element.__boundView !== undefined);
+    return path.find(element => {
+      const view = element.__boundView;
+      if(view !== undefined){
+        if(view.modelBinding || view.eventBinding){
+          return true;
+        }
+      }
+
+      return false;
+    });
   }
 
   function setTarget(element) {
