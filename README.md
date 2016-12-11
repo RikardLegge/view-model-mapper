@@ -6,6 +6,8 @@ This Project was inspired by the complexity of syncing data in user interfaces w
 
 ## Goals
 
+* [TODO] Drag and drop UI for building a user interface and mapping model data
+
 * [TODO] All views are pluggable and will expose ports and connectors. 
 The connections are declarative and can be configured in a sepparate json file.
 
