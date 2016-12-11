@@ -13,7 +13,7 @@ The connections are declarative and can be configured in a sepparate json file.
 
 * Views and data are only connected by data bindings which can be configured by a third party interface.
 
-* [TODO] Extract all view->data / view->view connection logic into a serializable data structure.
+* Extract all view->data / view->view connection logic into a serializable data structure.
 
 ## Example
 Currently uses non compiled es6 syntax and will therefor not work in older browsers.
