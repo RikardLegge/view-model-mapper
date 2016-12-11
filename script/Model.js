@@ -1,11 +1,13 @@
 const parent = Symbol();
 const autoSetPath = Symbol();
 const unSetPath = Symbol();
+const ignoreEqualSet = Symbol();
 
 class Model extends EventSource {
 
   constructor(object){
     super();
+    this[ignoreEqualSet] = true;
     this.attachProperties(object);
   }
 
@@ -29,6 +31,9 @@ class Model extends EventSource {
       configurable: false,
       get() {return value},
       set(next) {
+        if(this[ignoreEqualSet] && value === next)
+          return;
+
         this[unSetPath](value);
 
         value = next;
