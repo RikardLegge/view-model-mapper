@@ -23,19 +23,21 @@ const presistedState = {
     }
   ],
   views: [
-    {id: 11, type: ['default', 'root']},
+    {id: 11, path: ['default', 'root']},
+    {id: 12, path: ['default', 'group'], parentView: {id:11, port: 0}},
+    {id: 13, path: ['default', 'group'], parentView: {id:11, port: 0}, properties:{name:'log'}},
 
-    {id: 12, type: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
-    {id: 13, type: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}, middlewere: {type:['invert']}},
-    {id: 14, type: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
-    {id: 15, type: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}, middlewere: {type:['invert']}},
-    {id: 16, type: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
+    {id: 20, path: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
+    {id: 21, path: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}, middlewere: {path:['helloworld', 'invert']}},
+    {id: 22, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
+    {id: 23, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}, middlewere: {path:['helloworld', 'invert']}},
+    {id: 24, path: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
 
-    {id: 17, type: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:11, port: 0}},
+    {id: 25, path: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:12, port: 0}},
 
-    {id: 18, type: ['default', 'label'], parentView: {id:11, port: 0}, properties: {name: 'callstack__container'}},
-    {id: 19, type: ['default', 'label'], modelBinding: {id:1, path: 'log'}, parentView: {id:18, port: 0}, middlewere: {type:['wrapLines']}, properties: {name: 'callstack'}},
+    {id: 26, path: ['default', 'label'], modelBinding: {id:1, path: 'log'}, parentView: {id:13, port: 0}, middlewere: {path:['helloworld', 'wrapLines']}, properties: {name: 'callstack'}},
 
+    {id: 27, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1'}, parentView: {id:12, port: 0}, signalHandler: {path:['helloworld', 'setText1']}},
   ]
 };
 
@@ -63,18 +65,21 @@ function parsePersistedState(state){
   const views = {};
   const unattachedViews = [];
 
-  state.views.forEach(({type, properties,
+  state.views.forEach(({path, properties={},
     id: key,
     modelBinding: modelBindingDef,
     eventBinding: eventBindingDef,
     parentView: parentViewDef,
-    middlewere: middlewereDef
+    middlewere: middlewereDef,
+    signalHandler: signalHandlerDef,
   })=>{
-    const middlewere = middlewereDef && reduce(Middlewere, middlewereDef.type);
+    properties.name = properties.name === undefined ? 'default' : properties.name;
+    const middlewere = middlewereDef && reduce(Functions, middlewereDef.path);
+    const signalHandler = signalHandlerDef && reduce(Functions, signalHandlerDef.path);
     const modelBinding = modelBindingDef && new ModelBinding(models[modelBindingDef.id], modelBindingDef.path, middlewere);
-    const eventBinding = eventBindingDef && new EventBinding(models[eventBindingDef.id], eventBindingDef.signal);
+    const eventBinding = eventBindingDef && new EventBinding(models[eventBindingDef.id], eventBindingDef.signal, signalHandler);
 
-    const viewFactory = reduce(UI, type);
+    const viewFactory = reduce(UI, path);
     const view = viewFactory.create({modelBinding, eventBinding, properties});
 
     views[key] = view;
@@ -84,7 +89,7 @@ function parsePersistedState(state){
   });
 
   unattachedViews.forEach(({view, parentViewDef})=>{
-    view.setParentView(views[parentViewDef.id])
+    view.setParentView(views[parentViewDef.id], parentViewDef.port)
   });
   unattachedViews.length = 0;
 
@@ -177,9 +182,10 @@ function bindingEditor() {
     }
   }
 
-  const modelInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'modelText'), properties: { name: 'modelEditor' }, parentView: viewRoot });
-  const eventInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'eventText'), properties: { name: 'eventEditor' }, parentView: viewRoot });
-  UI.default.label.create({ modelBinding: new ModelBinding(editorModel, 'suggestions', a=>a.join('<br>')), properties: { name: 'modelEditor' }, parentView: viewRoot });
+  const modelGroup = UI.default.group.create({ parentView: viewRoot, properties: {name: 'bindingEditor'} });
+  const modelInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'modelText'), properties: { name: 'bindingEditor' }, parentView: modelGroup });
+  const eventInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'eventText'), properties: { name: 'bindingEditor' }, parentView: modelGroup });
+  UI.default.label.create({ modelBinding: new ModelBinding(editorModel, 'suggestions', a=>a.join('<br>')), properties: { name: 'bindingEditor' }, parentView: modelGroup });
 
   document.body.addEventListener('click', (event) => {
     let element = findViewInPath(event.path);

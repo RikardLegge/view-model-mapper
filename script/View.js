@@ -1,22 +1,40 @@
 const template = Symbol();
+const properties = Symbol();
 
 class Template {
 
-  constructor(templateString){
+  constructor(templateProperties, templateString){
+    this[properties] = templateProperties;
     this[template] = templateString;
   }
 
   construct(properties){
     const templateString = this.compileTemplate(this[template], properties);
-    const element = document.createElement("div");
+    const elementConstructor = document.createElement("div");
+    elementConstructor.innerHTML = templateString;
 
-    element.innerHTML = templateString;
+    const ports = elementConstructor.querySelectorAll('[data-port]');
+    const element = elementConstructor.children[0];
 
-    return element.children[0];
+    return {element, ports};
+  }
+
+  precompileTemplate(templateString, namespace){
+    const type = this[properties].name ? this[properties].name + '__' : '';
+    return templateString
+      .replace(/class=(['"])([^'"]*)\1/g,
+        (_, __, all, key) => all
+          .split(' ')
+            .filter(cls=>!!cls.trim())
+            .map(cls=>`class="${namespace}${type}${cls}"`)
+          .join(' '));
   }
 
   compileTemplate(templateString, properties={}) {
-    return templateString.replace(/(#\{([^}]*)})/g, (_, all, key) => properties[key] )
+    const namespace = properties.name || '';
+    return this.precompileTemplate(templateString, namespace)
+     .replace(/(#\{([^}]*)})/g,
+       (_, all, key) => properties[key] || '' )
   }
 
 }
@@ -31,7 +49,7 @@ class ViewDefinition {
     this[viewDefinition] = definition;
   }
 
-  construct(element, {eventBinding, modelBinding}={}){
+  construct(element, {ports, eventBinding, modelBinding}={}){
     const vd = this[viewDefinition];
     const view = new ViewBinding();
 
@@ -46,7 +64,7 @@ class ViewDefinition {
     view.construct(view);
     eventBinding && view.setEventBinding(eventBinding);
     modelBinding && view.setModelBinding(modelBinding, false);
-    view.setElement(element, false);
+    view.setElement(element, ports, false);
     view.modelChanged();
 
     return view;
@@ -54,12 +72,13 @@ class ViewDefinition {
 }
 
 const element = Symbol();
+const ports = Symbol();
 const eventBinding = Symbol();
 const modelBinding = Symbol();
 
 class ViewBinding {
 
-  setElement(viewElement, triggerChange=true){
+  setElement(viewElement, elementPorts=[], triggerChange=true){
     const oldElement = this[element];
     if(oldElement){
       this.detachElement(this);
@@ -67,6 +86,7 @@ class ViewBinding {
     }
 
     this[element] = viewElement;
+    this[ports] = elementPorts;
     viewElement.boundView = this;
     this.attachElement(this);
 
@@ -104,6 +124,9 @@ class ViewBinding {
   }
 
   viewSignal(){
+    if(!this[eventBinding])
+      return;
+
     this[eventBinding].trigger();
   }
 
@@ -121,25 +144,31 @@ class ViewBinding {
     this.setValue(this, this[modelBinding].get());
   }
 
-  setParentView(view){
+  setParentView(view, port=0){
     if(view){
-      view.getElement().appendChild(this[element]);
+      console.assert(view[ports][port], `The port ${port} does not exist on`, view);
+      view[ports][port].appendChild(this[element]);
     }
   }
 }
 
+const defaultViewDefinition = new ViewDefinition();
 class ViewFactory {
 
-  constructor(template, viewDefinition){
+  constructor(template, viewDefinition=defaultViewDefinition){
     this.template = template;
     this.viewDefinition = viewDefinition;
   }
 
   create(options={}){
-    const bindings = {modelBinding: options.modelBinding, eventBinding: options.eventBinding};
     const properties = options.properties;
-    const element = this.template.construct(properties);
-    const view = this.viewDefinition.construct(element, bindings);
+    const {element, ports} = this.template.construct(properties);
+    const definitionProperties = {
+      modelBinding: options.modelBinding,
+      eventBinding: options.eventBinding,
+      ports
+    };
+    const view = this.viewDefinition.construct(element, definitionProperties);
 
     view.setParentView(options.parentView);
 
@@ -149,4 +178,10 @@ class ViewFactory {
   static from(template, viewDefinition){
     return new ViewFactory(template, viewDefinition);
   }
+}
+
+function $queryIncludeSelf(element, query){
+  const includeSelf = [...element.parentNode.querySelectorAll(query)].indexOf(element) !== -1;
+  const self = includeSelf ? [element] : [];
+  return [...self, ...element.querySelectorAll(query)];
 }
