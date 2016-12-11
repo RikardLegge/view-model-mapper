@@ -1,0 +1,59 @@
+@import "layout"
+
+html, body
+  width: 100%
+  height: 100%
+  margin: 0
+  padding: 0
+
+.default
+  +button
+
+  &Button
+    &__container
+      user-select: none
+
+    &__content
+      padding: 5px
+      border: 1px solid green
+
+    &__hitbox:active &__content
+      background: red
+
+.bindingEditor
+  &Group
+    &__container
+      position: absolute
+      bottom: 0
+      left: 0
+      width: 100%
+
+  &Label
+    padding: 0 40px
+    width: calc(100% - 80px)
+    overflow: hidden
+    font-family: monospace
+    text-align: center
+    white-space: nowrap
+    text-overflow: ellipsis
+
+  &Text
+    &__input
+      width: 100%
+      line-height: 18px
+      font-size: 18px
+      font-family: monospace
+      text-align: center
+
+.logGroup
+  &__content
+    position: relative
+    width: 100%
+    height: 10em
+    overflow: auto
+    border-top: 1px solid lightgray
+
+.callstack
+  &Label
+    width: 100%
+    font-family: monospace
