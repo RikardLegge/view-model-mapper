@@ -1,10 +1,26 @@
 const parent = Symbol();
+const autoSetPath = Symbol();
+const unSetPath = Symbol();
 
 class Model extends EventSource {
+
   constructor(object){
     super();
     this.attachProperties(object);
   }
+
+  [autoSetPath](model, key){
+    if(model instanceof Model){
+      model.setPath(this, key);
+    }
+  }
+
+  [unSetPath](model){
+    if(model instanceof Model){
+      model.setPath(null, null);
+    }
+  }
+
 
   addValueProperty(key, startValue){
     let value = startValue;
@@ -13,14 +29,16 @@ class Model extends EventSource {
       configurable: false,
       get() {return value},
       set(next) {
+        this[unSetPath](value);
+
         value = next;
+
+        this[autoSetPath](value, key);
         this.trigger(key, value);
       }
     });
 
-    if(startValue instanceof Model){
-      startValue.setPath(this, key);
-    }
+    this[autoSetPath](value, key);
   }
 
   addMethodProperty(key, get, set, dependencies=[]){
@@ -43,21 +61,6 @@ class Model extends EventSource {
     });
   }
 
-  getPath() {
-    const parentModel = this[parent];
-    return parentModel ? [...parentModel.model.getPath(), parentModel.key] : [];
-  }
-
-  getParent() {
-    return this[parent]
-      ? {model: this[parent].model, key: this[parent].key}
-      : {};
-  }
-
-  setPath(model, key) {
-    this[parent] = {model, key};
-  }
-
   attachProperties(object){
     Object.entries(object).forEach(([key, value])=>{
       if(typeof value === 'function') {
@@ -74,98 +77,131 @@ class Model extends EventSource {
     });
 
   }
+
+
+  getPath() {
+    return this[parent]
+      ? [...this[parent].model.getPath(), this[parent].key]
+      : [];
+  }
+
+  getParent() {
+    return this[parent]
+      ? {model: this[parent].model, key: this[parent].key}
+      : {};
+  }
+
+  setPath(model, key) {
+    this[parent] = {model, key};
+  }
+
 }
 
+const model = Symbol();
+const signal = Symbol();
+const eventHandler = Symbol();
+
 class EventBinding {
-  constructor(model, signal, eventHandler){
-    this.model = model;
-    this.signal = signal;
-    this.eventHandler = eventHandler;
+
+  constructor(modelData, eventSignal, signalHandler){
+    this[model] = modelData;
+    this[signal] = eventSignal;
+    this[eventHandler] = signalHandler;
   }
 
   trigger() {
-    this.eventHandler(this.get(), this.model);
+    this[eventHandler](this.get(), this[model]);
   }
 
   get() {
-    return this.signal;
+    return this[signal];
   }
 
   getKey() {
-    return this.signal;
+    return this[signal];
   }
 
-
   getPath(){
-    const modelPath = this.model.getPath();
+    const modelPath = this[model].getPath();
     return [...modelPath, this.getKey()];
   }
 
-  setModel({model, signal}){
-    this.model = model || this.model;
-    this.signal = signal || this.signal;
+  setModel({modelData, eventSignal}){
+    this[model] = modelData || this[model];
+    this[signal] = eventSignal || this[signal];
   }
 }
 
+const mapper = Symbol();
+const key = Symbol();
+const onChange = Symbol();
+
+const attachListeners = Symbol();
+const detachListeners = Symbol();
+
 class ModelBinding {
-  constructor(model, key, mapper=(value)=>value){
-    this.model = model;
-    this.key = key;
-    this.mapper = mapper;
+
+  constructor(modelData, propertyKey, dataMapper=(value)=>value){
+    this[model] = modelData;
+    this[key] = propertyKey;
+    this[mapper] = dataMapper;
+    this[onChange] = null;
   }
 
   set(value){
-    this.model[this.key] = this.mapper(value);
+    this[model][this[key]] = this[mapper](value);
   }
 
   get(){
-    const value = this.model[this.key];
-    return this.mapper(value);
+    const value = this[model][this[key]];
+    return this[mapper](value);
   }
 
   getKey() {
-    return this.key;
+    return this[key];
   }
 
-  listen(onChange) {
-    this.__detachListeners();
+  listen(onChangeListener) {
+    this[detachListeners]();
 
-    this.onChange = onChange;
+    this[onChange] = onChangeListener;
 
-    this.__attachListeners();
+    this[attachListeners]();
   }
 
   unListen(){
-    this.__detachListeners();
+    this[detachListeners]();
   }
 
   getPath(){
-    const modelPath = this.model.getPath();
+    const modelPath = this[model].getPath();
     return [...modelPath, this.getKey()];
   }
 
-  setModel({model, key, mapper, triggerEvent = true}={}){
-    this.__detachListeners();
+  setModel({modelData, propertyKey, dataMapper, triggerEvent = true}={}){
+    this[detachListeners]();
 
-    this.model = model || this.model;
-    this.key = key || this.key;
-    this.mapper = mapper || this.mapper;
+    this[model] = modelData || this[model];
+    this[key] = propertyKey || this[key];
+    this[mapper] = dataMapper || this[mapper];
 
-    this.__attachListeners();
+    this[attachListeners]();
 
     if(triggerEvent)
-      this.onChange();
+      this[onChange]();
   }
 
-  __attachListeners() {
-    this.model.listen(this.key, this.onChange);
+  [attachListeners]() {
+    this[model].listen(this[key], this[onChange]);
   }
 
-  __detachListeners() {
-    this.model.unListen(this.key, this.onChange);
+  [detachListeners]() {
+    this[model].unListen(this[key], this[onChange]);
   }
 
+  static from(){
 
+  }
 
 }
 

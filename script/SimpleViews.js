@@ -5,7 +5,7 @@ const checkboxView = new ViewDefinition({
   set: (view, value) => view.inputElement.checked = !!value,
 
   attach: view => {
-    view.inputElement = view.element.querySelector('input');
+    view.inputElement = view.getElement().querySelector('input');
     view.inputElement.addEventListener('change', view.eventListener);
   },
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
@@ -17,7 +17,7 @@ const buttonView = new ViewDefinition({
   get: view => view.inputElement.value,
 
   attach: view => {
-    view.inputElement = view.element.querySelector('input');
+    view.inputElement = view.getElement().querySelector('input');
     view.inputElement.addEventListener('click', view.eventListener);
   },
   detach: view => view.inputElement.removeEventListener('click', view.eventListener)
@@ -30,7 +30,7 @@ const radioView = new ViewDefinition({
   set: (view, value) => view.inputElement.checked = (value == view.inputElement.value),
 
   attach: view => {
-    view.inputElement = view.element.querySelector('input');
+    view.inputElement = view.getElement().querySelector('input');
     view.inputElement.addEventListener('change', view.eventListener);
   },
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
@@ -47,14 +47,14 @@ const textView = new ViewDefinition({
     : view.inputElement.removeAttribute(prop),
 
   attach: view => {
-    view.inputElement = view.element.querySelector('input');
+    view.inputElement = view.getElement().querySelector('input');
     view.inputElement.addEventListener('input', view.eventListener);
   },
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
 });
 
 const labelView = new ViewDefinition({
-  set: (view, value) => view.element.innerHTML = value,
+  set: (view, value) => view.getElement().innerHTML = value,
 });
 
 const buttonTemplate = new Template(
@@ -85,8 +85,11 @@ const labelTemplate = new Template(
   `<div class="#{name}Label"></div>
 `);
 
-ViewFactory.register('radio', radioTemplate, radioView);
-ViewFactory.register('checkbox', checkboxTemplate, checkboxView);
-ViewFactory.register('text', textTemplate, textView);
-ViewFactory.register('label', labelTemplate, labelView);
-ViewFactory.register('button', buttonTemplate, buttonView);
+const UI = {};
+UI.default = {};
+
+UI.default.radio = ViewFactory.from(radioTemplate, radioView);
+UI.default.checkbox = ViewFactory.from(checkboxTemplate, checkboxView);
+UI.default.text = ViewFactory.from(textTemplate, textView);
+UI.default.label = ViewFactory.from(labelTemplate, labelView);
+UI.default.button = ViewFactory.from(buttonTemplate, buttonView);

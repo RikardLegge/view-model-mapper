@@ -1,43 +1,47 @@
+const template = Symbol();
+
 class Template {
 
-  constructor(template){
-    this.template = template;
+  constructor(templateString){
+    this[template] = templateString;
   }
 
   construct(properties){
-    const template = this.compileTemplate(this.template, properties);
+    const templateString = this.compileTemplate(this[template], properties);
     const element = document.createElement("div");
-    element.innerHTML = template;
+
+    element.innerHTML = templateString;
+
     return element.children[0];
   }
 
-  compileTemplate(template, properties={}) {
-    return template.replace(/(#\{([^}]*)})/g, (_, all, key)=>{
-      return properties[key];
-    })
+  compileTemplate(templateString, properties={}) {
+    return templateString.replace(/(#\{([^}]*)})/g, (_, all, key) => properties[key] )
   }
 
 }
 
-function noOp(){}
+const viewDefinition = Symbol();
+const noOp = ()=>{};
+const notYetImplemented = ()=>{throw "Not yet implemented"};
 
 class ViewDefinition {
 
-  constructor(viewDefinition){
-    this.viewDefinition = viewDefinition;
+  constructor(definition = {}){
+    this[viewDefinition] = definition;
   }
 
   construct(element, {eventBinding, modelBinding}={}){
-    const vd = this.viewDefinition;
-    const view = new View();
+    const vd = this[viewDefinition];
+    const view = new ViewBinding();
 
     view.construct = vd.construct || noOp;
     view.getValue = vd.get || noOp;
     view.setValue = vd.set || noOp;
     view.attachElement = vd.attach || noOp;
     view.detachElement = vd.detach || noOp;
-    view.enable = vd.setProp ? ()=>vd.setProp(view, 'disabled', false) : noOp;
-    view.disable = vd.setProp ? ()=>vd.setProp(view, 'disabled', true) : noOp;
+    view.enable = vd.setProp ? ()=>vd.setProp(view, 'disabled', false) : notYetImplemented;
+    view.disable = vd.setProp ? ()=>vd.setProp(view, 'disabled', true) : notYetImplemented;
 
     view.construct(view);
     eventBinding && view.setEventBinding(eventBinding);
@@ -49,80 +53,96 @@ class ViewDefinition {
   }
 }
 
-class View {
+const element = Symbol();
+const eventBinding = Symbol();
+const modelBinding = Symbol();
 
-  setElement(element, triggerChange=true){
-    if(this.element){
-      let oldElement = this.element;
+class ViewBinding {
+
+  setElement(viewElement, triggerChange=true){
+    const oldElement = this[element];
+    if(oldElement){
       this.detachElement(this);
-      delete oldElement.__boundView;
+      delete oldElement.boundView;
     }
 
-    this.element = element;
-    element.__boundView = this;
+    this[element] = viewElement;
+    viewElement.boundView = this;
     this.attachElement(this);
 
     if(triggerChange)
       this.modelChanged();
   }
 
-  setEventBinding(eventBinding){
-    this.eventBinding = eventBinding;
+  getElement(){
+    return this[element];
   }
 
-  setModelBinding(modelBinding, triggerChange=true){
-    if(this.modelBinding){
-      this.modelBinding.unListen();
+  setEventBinding(binding){
+    this[eventBinding] = binding;
+  }
+
+  setModelBinding(binding, triggerChange=true){
+    if(this[modelBinding]){
+      this[modelBinding].unListen();
     }
 
-    this.modelBinding = modelBinding;
-    this.modelBinding.listen(()=>this.modelChanged());
+    this[modelBinding] = binding;
+    this[modelBinding].listen(()=>this.modelChanged());
 
     if(triggerChange) {
       this.modelChanged();
     }
   }
 
+  getEventBinding(){
+    return this[eventBinding];
+  }
+
+  getModelBinding(){
+    return this[modelBinding];
+  }
+
   viewSignal(){
-    this.eventBinding.trigger();
+    this[eventBinding].trigger();
   }
 
   viewChanged(){
-    if(!this.modelBinding)
+    if(!this[modelBinding])
       return;
 
-    this.modelBinding.set(this.getValue(this));
+    this[modelBinding].set(this.getValue(this));
   }
 
   modelChanged(){
-    if(!this.modelBinding)
+    if(!this[modelBinding])
       return;
 
-    this.setValue(this, this.modelBinding.get());
+    this.setValue(this, this[modelBinding].get());
   }
-
 }
 
 class ViewFactory {
-  static create(type, bindings, properties, options={}){
-    const [template, viewDefinition] = ViewFactory.types[type] || [];
 
-    if(template){
-      const element = template.construct(properties);
-      const view = viewDefinition.construct(element, bindings);
+  constructor(template, viewDefinition){
+    this.template = template;
+    this.viewDefinition = viewDefinition;
+  }
 
-      if(options.target){
-        options.target.appendChild(element);
-      }
+  create(options){
+    const bindings = {modelBinding: options.modelBinding, eventBinding: options.eventBinding};
+    const properties = options.properties;
+    const element = this.template.construct(properties);
+    const view = this.viewDefinition.construct(element, bindings);
 
-      return view;
+    if(options.parentView){
+      options.parentView.getElement().appendChild(element);
     }
 
+    return view;
   }
 
-  static register(key, template, view){
-    ViewFactory.types[key] = [template, view];
+  static from(template, viewDefinition){
+    return new ViewFactory(template, viewDefinition);
   }
 }
-ViewFactory.types = [];
-

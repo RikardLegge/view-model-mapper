@@ -29,23 +29,26 @@ requestAnimationFrame(function frame(){
 
 // Construct UI
 
-ViewFactory.create('checkbox', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
-ViewFactory.create('checkbox', {modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v)}, {}, {target: document.body});
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v)}, {}, {target: document.body});
-ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState.button, 'pressed')}, {}, {target: document.body});
+const viewRoot = new ViewDefinition().construct(document.body);
 
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState.button, 'exampleText')}, {}, {target: document.body});
+UI.default.checkbox.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
+UI.default.checkbox.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v), parentView: viewRoot });
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v), parentView: viewRoot });
+UI.default.text.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
 
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'counter')}, {}, {target: document.body});
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'trippleCounter')}, {}, {target: document.body});
-ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState, 'counter')}, {}, {target: document.body});
-ViewFactory.create('text', {modelBinding: new ModelBinding(applicationState, 'trippleCounter')}, {}, {target: document.body});
-ViewFactory.create('button', {eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']++)}, {}, {target: document.body});
-ViewFactory.create('button', {eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']--)}, {}, {target: document.body});
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'exampleText'), parentView: viewRoot });
 
-const labelContainer = ViewFactory.create('label', {}, { name: 'callstack__container' }, {target: document.body});
-ViewFactory.create('label', {modelBinding: new ModelBinding(applicationState, 'log', a=>a.join('<br>'))}, { name: 'callstack' }, {target: labelContainer.element});
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'counter'), parentView: viewRoot });
+UI.default.text.create({ modelBinding: new ModelBinding(applicationState, 'counter'), parentView: viewRoot });
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'trippleCounter'), parentView: viewRoot });
+UI.default.text.create({ modelBinding: new ModelBinding(applicationState, 'trippleCounter'), parentView: viewRoot });
+
+UI.default.button.create({ eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']++), parentView: viewRoot });
+UI.default.button.create({ eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']--), parentView: viewRoot });
+
+const labelContainer = UI.default.label.create({parentView: viewRoot, properties: { name: 'callstack__container' } });
+UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'log', a=>a.join('<br>')), parentView: labelContainer, properties: { name: 'callstack' } });
 
 applicationState.listen('*', (key, value, state)=> key !== 'log' && key !== 'frameCount' &&
   (state.log = [...state.log, `<b>${key}</b> => ${value}`]));
@@ -64,8 +67,8 @@ function bindingEditor() {
   editorModel.listen('target', () => {
     const target = editorModel.target;
     if(target){
-      const modelBinding = target.modelBinding;
-      const eventBinding = target.eventBinding;
+      const modelBinding = target.getModelBinding();
+      const eventBinding = target.getEventBinding();
 
       editorModel.eventText = eventBinding ? eventBinding.getPath().join('.') : '[EventBinding UNAVAILABLE]';
       editorModel.modelText = modelBinding ? modelBinding.getPath().join('.') : '[ModelBinding UNAVAILABLE]';
@@ -79,18 +82,18 @@ function bindingEditor() {
   editorModel.listen('eventText', updateEventBinding);
 
   function updateEventBinding(){
-    if (!editorModel.target || !editorModel.target.eventBinding) {
+    if (!editorModel.target || !editorModel.target.getEventBinding()) {
       eventInput.disable();
       return;
     }
     eventInput.enable();
 
     const signal = editorModel.eventText;
-    editorModel.target.eventBinding.setModel({signal});
+    editorModel.target.getEventBinding().setModel({signal});
   }
 
   function updateModelBinding(){
-    if (!editorModel.target || !editorModel.target.modelBinding) {
+    if (!editorModel.target || !editorModel.target.getModelBinding()) {
       editorModel.suggestions = [];
       modelInput.disable();
       return;
@@ -111,18 +114,18 @@ function bindingEditor() {
     if (path) {
       const fullPath = path.map(path => path.key).join('.');
 
-      if(fullPath === editorModel.target.modelBinding.getPath().join('.')){
+      if(fullPath === editorModel.target.getModelBinding().getPath().join('.')){
         return;
       }
 
-      editorModel.target.modelBinding.setModel(path.pop());
+      editorModel.target.getModelBinding().setModel(path.pop());
       console.log(`Model set to ${fullPath}`);
     }
   }
 
-  const modelInput = ViewFactory.create('text', {modelBinding: new ModelBinding(editorModel, 'modelText')}, { name: 'modelEditor' }, {target: document.body});
-  const eventInput = ViewFactory.create('text', {modelBinding: new ModelBinding(editorModel, 'eventText')}, { name: 'eventEditor' }, {target: document.body});
-  ViewFactory.create('label', {modelBinding: new ModelBinding(editorModel, 'suggestions', a=>a.join('<br>'))}, { name: 'modelEditor' }, {target: document.body});
+  const modelInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'modelText'), properties: { name: 'modelEditor' }, parentView: viewRoot });
+  const eventInput = UI.default.text.create({ modelBinding: new ModelBinding(editorModel, 'eventText'), properties: { name: 'eventEditor' }, parentView: viewRoot });
+  UI.default.label.create({ modelBinding: new ModelBinding(editorModel, 'suggestions', a=>a.join('<br>')), properties: { name: 'modelEditor' }, parentView: viewRoot });
 
   document.body.addEventListener('click', (event) => {
     let element = findViewInPath(event.path);
@@ -131,9 +134,9 @@ function bindingEditor() {
 
   function findViewInPath(path) {
     return path.find(element => {
-      const view = element.__boundView;
+      const view = element.boundView;
       if(view !== undefined){
-        if(view.modelBinding || view.eventBinding){
+        if(view.getModelBinding() || view.getEventBinding()){
           return true;
         }
       }
@@ -144,17 +147,17 @@ function bindingEditor() {
 
   function setTarget(element) {
 
-    if (element === modelInput.element || element === eventInput.element) {
+    if (element === modelInput.getElement() || element === eventInput.getElement()) {
       return;
     }
 
     if (editorModel.target) {
-      editorModel.target.element.style = '';
+      editorModel.target.getElement().style = '';
     }
 
     if (element) {
-      editorModel.target = element.__boundView;
-      editorModel.target.element.style = 'background:rgba(200,200,100, .4)';
+      editorModel.target = element.boundView;
+      editorModel.target.getElement().style = 'background:rgba(200,200,100, .4)';
     } else {
       editorModel.target = null;
     }

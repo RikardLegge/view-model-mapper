@@ -1,10 +1,12 @@
 const triggers = Symbol();
-const callstack = Symbol();
+const callStack = Symbol();
+const allowEventBubbling = Symbol();
 
 class EventSource {
   constructor(){
     this[triggers] = [];
-    this[callstack] = [];
+    this[callStack] = [];
+    this[allowEventBubbling] = true;
   }
 
   listen(glob, onChange) {
@@ -23,22 +25,24 @@ class EventSource {
   }
 
   trigger(key, value) {
-    if(this[callstack].indexOf(key) !== -1){
-      this[callstack] = [];
+    if(this[callStack].indexOf(key) !== -1){
+      this[callStack] = [];
       return;
     }
-    this[callstack].push(key);
+    this[callStack].push(key);
 
     this[triggers]
       .filter(({glob}) => checkGlob(glob, key))
       .forEach(({onChange}) => onChange(key, value, this));
 
-    const {model: parent, key: parentKey} = this.getParent();
-    if(parent && parent instanceof EventSource){
-      parent.trigger(`${parentKey}.${key}`, value, this);
+    if(this[allowEventBubbling]) {
+      const {model: parent, key: parentKey} = this.getParent();
+      if (parent instanceof EventSource) {
+        parent.trigger(`${parentKey}.${key}`, value, this);
+      }
     }
 
-    this[callstack].pop();
+    this[callStack].pop();
   }
 }
 
