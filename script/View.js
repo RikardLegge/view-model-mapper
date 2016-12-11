@@ -120,6 +120,12 @@ class ViewBinding {
 
     this.setValue(this, this[modelBinding].get());
   }
+
+  setParentView(view){
+    if(view){
+      view.getElement().appendChild(this[element]);
+    }
+  }
 }
 
 class ViewFactory {
@@ -129,15 +135,13 @@ class ViewFactory {
     this.viewDefinition = viewDefinition;
   }
 
-  create(options){
+  create(options={}){
     const bindings = {modelBinding: options.modelBinding, eventBinding: options.eventBinding};
     const properties = options.properties;
     const element = this.template.construct(properties);
     const view = this.viewDefinition.construct(element, bindings);
 
-    if(options.parentView){
-      options.parentView.getElement().appendChild(element);
-    }
+    view.setParentView(options.parentView);
 
     return view;
   }

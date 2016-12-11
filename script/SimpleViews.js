@@ -85,11 +85,29 @@ const labelTemplate = new Template(
   `<div class="#{name}Label"></div>
 `);
 
+class rawTemplate {
+
+  constructor(element){
+    this.element = element;
+  }
+
+  construct(){
+    return this.element;
+  }
+}
+
 const UI = {};
 UI.default = {};
+
+UI.default.root = ViewFactory.from(new rawTemplate(document.body), new ViewDefinition());
 
 UI.default.radio = ViewFactory.from(radioTemplate, radioView);
 UI.default.checkbox = ViewFactory.from(checkboxTemplate, checkboxView);
 UI.default.text = ViewFactory.from(textTemplate, textView);
 UI.default.label = ViewFactory.from(labelTemplate, labelView);
 UI.default.button = ViewFactory.from(buttonTemplate, buttonView);
+
+
+const Middlewere = {};
+Middlewere.invert = b=>!b;
+Middlewere.wrapLines = a=>a.join('<br>');

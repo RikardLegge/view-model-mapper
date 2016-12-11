@@ -1,64 +1,118 @@
-// Define state
+const presistedState = {
+  models: [
+    {
+      id: 1,
+      name: 'application',
+      properties: {
+        frameCount: 0,
+        counter: 1,
+        log: []
+      },
+      aliases: [
+        {key: 'button', value: {type: 'model', id: 2}}
+      ]
+    },
+    {
+      id: 2,
+      properties: {
+        pressed: false,
+        valid: true,
+        invalid: false,
+        exampleText: 'Press me! Then change "button.exampleText" to "frameCount"'
+      }
+    }
+  ],
+  views: [
+    {id: 11, type: ['default', 'root']},
 
-const buttonState = new Model({
-  pressed: false,
-  valid: true,
-  invalid: false,
-  exampleText: 'Press me! Then change "button.exampleText" to "frameCount"'
-});
+    {id: 12, type: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
+    {id: 13, type: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}, middlewere: {type:['invert']}},
+    {id: 14, type: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
+    {id: 15, type: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}, middlewere: {type:['invert']}},
+    {id: 16, type: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:11, port: 0}},
 
-const applicationState = new Model({
-  button: buttonState,
-  frameCount: 0,
-  counter: 1,
-  log: []
-});
+    {id: 17, type: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:11, port: 0}},
 
-applicationState.attachProperties({
-  trippleCounter: {
-    get: data => data.counter * 3,
-    set: (data, value) => data.counter = value / 3,
-    dependencies: ['counter']
+    {id: 18, type: ['default', 'label'], parentView: {id:11, port: 0}, properties: {name: 'callstack__container'}},
+    {id: 19, type: ['default', 'label'], modelBinding: {id:1, path: 'log'}, parentView: {id:18, port: 0}, middlewere: {type:['wrapLines']}, properties: {name: 'callstack'}},
+
+  ]
+};
+
+parsePersistedState(presistedState);
+
+function parsePersistedState(state){
+  const models = {};
+  const unresolvedModelAliases = [];
+
+  state.models.forEach(({id: key, properties, aliases=[]} )=>{
+    const model = new Model(properties);
+    models[key] = model;
+    unresolvedModelAliases.push(...aliases.map(alias=>({model, alias})));
+  });
+
+  unresolvedModelAliases.forEach(({model, alias:{key, value:{type, id}}})=>{
+    switch(type) {
+      case 'model':
+        model.addValueProperty(key, models[id]);
+        break;
+    }
+  });
+  unresolvedModelAliases.length = 0;
+
+  const views = {};
+  const unattachedViews = [];
+
+  state.views.forEach(({type, properties,
+    id: key,
+    modelBinding: modelBindingDef,
+    eventBinding: eventBindingDef,
+    parentView: parentViewDef,
+    middlewere: middlewereDef
+  })=>{
+    const middlewere = middlewereDef && reduce(Middlewere, middlewereDef.type);
+    const modelBinding = modelBindingDef && new ModelBinding(models[modelBindingDef.id], modelBindingDef.path, middlewere);
+    const eventBinding = eventBindingDef && new EventBinding(models[eventBindingDef.id], eventBindingDef.signal);
+
+    const viewFactory = reduce(UI, type);
+    const view = viewFactory.create({modelBinding, eventBinding, properties});
+
+    views[key] = view;
+
+    if(parentViewDef)
+      unattachedViews.push({view, parentViewDef});
+  });
+
+  unattachedViews.forEach(({view, parentViewDef})=>{
+    view.setParentView(views[parentViewDef.id])
+  });
+  unattachedViews.length = 0;
+
+  function reduce(obj, path){
+    return path.reduce((obj, path)=>obj[path], obj);
   }
-});
 
-requestAnimationFrame(function frame(){
-  applicationState.frameCount++;
-  requestAnimationFrame(frame);
-});
+  onLoad({model: models[1]});
+}
 
-// Construct UI
+function onLoad({model}){
+  enableLogger(model, ['frameCount']);
+}
 
-const viewRoot = new ViewDefinition().construct(document.body);
-
-UI.default.checkbox.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
-UI.default.checkbox.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v), parentView: viewRoot });
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed', v=>!v), parentView: viewRoot });
-UI.default.text.create({ modelBinding: new ModelBinding(applicationState.button, 'pressed'), parentView: viewRoot });
-
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState.button, 'exampleText'), parentView: viewRoot });
-
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'counter'), parentView: viewRoot });
-UI.default.text.create({ modelBinding: new ModelBinding(applicationState, 'counter'), parentView: viewRoot });
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'trippleCounter'), parentView: viewRoot });
-UI.default.text.create({ modelBinding: new ModelBinding(applicationState, 'trippleCounter'), parentView: viewRoot });
-
-UI.default.button.create({ eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']++), parentView: viewRoot });
-UI.default.button.create({ eventBinding: new EventBinding(applicationState, 'signal1', (key, model)=>model['counter']--), parentView: viewRoot });
-
-const labelContainer = UI.default.label.create({parentView: viewRoot, properties: { name: 'callstack__container' } });
-UI.default.label.create({ modelBinding: new ModelBinding(applicationState, 'log', a=>a.join('<br>')), parentView: labelContainer, properties: { name: 'callstack' } });
-
-applicationState.listen('*', (key, value, state)=> key !== 'log' && key !== 'frameCount' &&
+function enableLogger(data, ignore){
+  ignore.unshift('log');
+  data.listen('*', (key, value, state)=> ignore.indexOf(key) === -1 &&
   (state.log = [...state.log, `<b>${key}</b> => ${value}`]));
+}
 
 // Create the UI editor
 
+const viewRoot = UI.default.root.create();
 function bindingEditor() {
 
   const editorModel = new Model({
     modelText: '',
+    viewText: '',
     eventText: '',
     target: null,
     suggestions: []
@@ -101,7 +155,7 @@ function bindingEditor() {
     modelInput.enable();
 
     const targetPath = editorModel.modelText;
-    const paths = ReflectModel.getPaths(applicationState);
+    const paths = [];//ReflectModel.getPaths(applicationState);
 
     editorModel.suggestions = paths
       .filter(path=>path.map(path => path.key).join('.').indexOf(targetPath) === 0)
