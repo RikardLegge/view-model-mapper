@@ -46,34 +46,37 @@ const defaultPresistedState = {
     }
   ],
   views: [
-    {id: 11, path: ['default', 'root']},
-    {id: 12, path: ['default', 'group'], parentView: {id:11, port: 0}},
-    {id: 13, path: ['default', 'group'], parentView: {id:11, port: 0}, properties:{name:'log'}},
+    {id: 11, index: 0, path: ['default', 'root']},
 
-    {id: 20, path: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
-    {id: 21, path: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
-    {id: 22, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
-    {id: 23, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
-    {id: 24, path: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
 
-    {id: 25, path: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:12, port: 0}},
+    {id: 13, index: 1, path: ['default', 'group'], parentView: {id:11, port: 0}, properties:{name:'log'}},
+    {id: 26, index: 0, path: ['default', 'label'], modelBinding: {id:1, path: 'log', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:13, port: 0}, properties: {name: 'callstack'}},
 
-    {id: 26, path: ['default', 'label'], modelBinding: {id:1, path: 'log', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:13, port: 0}, properties: {name: 'callstack'}},
 
-    {id: 32, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'saveView']}}, parentView: {id:12, port: 0} },
-    {id: 33, path: ['default', 'label'], modelBinding: {id:4, path: 'save'}, parentView: {id:32, port: 0}},
+    {id: 12, index: 0, path: ['default', 'group'], parentView: {id:11, port: 0}},
 
-    {id: 34, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'loadView']}}, parentView: {id:12, port: 0} },
-    {id: 35, path: ['default', 'label'], modelBinding: {id:4, path: 'load'}, parentView: {id:34, port: 0}},
+    {id: 20, index: 0, path: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
+    {id: 21, index: 2, path: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
+    {id: 22, index: 1, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
+    {id: 23, index: 3, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
+    {id: 24, index: 4, path: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
 
-    {id: 36, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'clearView']}}, parentView: {id:12, port: 0} },
-    {id: 37, path: ['default', 'label'], modelBinding: {id:4, path: 'clear'}, parentView: {id:36, port: 0}},
+    {id: 25, index: 5, path: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:12, port: 0}},
 
-    {id: 28, path: ['default', 'group'], parentView: {id:11, port: 0}, properties: { name: 'bindingEditor' }},
+    {id: 28, index: 2, path: ['default', 'group'], parentView: {id:11, port: 0}, properties: { name: 'bindingEditor' }},
 
-    {id: 29, path: ['default', 'label'], modelBinding: {id:3, path: 'suggestions', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 30, path: ['default', 'text'], modelBinding: {id:3, path: 'modelText', middlewere:{path:['helloworld','rewriteNullModelText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 31, path: ['default', 'text'], modelBinding: {id:3, path: 'eventText', middlewere:{path:['helloworld','rewriteNullEventText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 32, index: 0, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'saveView']}}, parentView: {id:28, port: 0} },
+    {id: 33, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'save'}, parentView: {id:32, port: 0}},
+
+    {id: 34, index: 1, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'loadView']}}, parentView: {id:28, port: 0} },
+    {id: 35, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'load'}, parentView: {id:34, port: 0}},
+
+    {id: 36, index: 2, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'clearView']}}, parentView: {id:28, port: 0} },
+    {id: 37, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'clear'}, parentView: {id:36, port: 0}},
+
+    {id: 29, index: 3, path: ['default', 'label'], modelBinding: {id:3, path: 'suggestions', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 30, index: 4, path: ['default', 'text'], modelBinding: {id:3, path: 'modelText', middlewere:{path:['helloworld','rewriteNullModelText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 31, index: 5, path: ['default', 'text'], modelBinding: {id:3, path: 'eventText', middlewere:{path:['helloworld','rewriteNullEventText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
   ],
 
   viewMutators: [
@@ -214,7 +217,7 @@ class StateParser {
     const views = {};
     const unattachedViews = [];
 
-    obj.forEach(({path, properties={}, id,
+    obj.sort((a, b)=>a.index - b.index).forEach(({path, properties={}, id,
       modelBinding: modelBindingDef,
       eventBinding: eventBindingDef,
       parentView: parentViewDef
@@ -314,6 +317,8 @@ class StateSerializer {
 
   serializeViews(obj, models) {
     return obj.views.map(({id, registryPath, view, properties, eventBindingDef, modelBindingDef})=>{
+      const element = view.getElement();
+      const index = [...element.parentNode.children].indexOf(element);
 
       let modelBinding;
       const modelBindingInstance = view.getModelBinding();
@@ -343,7 +348,7 @@ class StateSerializer {
         parentView = {id, port};
       }
 
-      return {id, path: registryPath, modelBinding, eventBinding, parentView, properties};
+      return {id, index, path: registryPath, modelBinding, eventBinding, parentView, properties};
     });
   }
 }

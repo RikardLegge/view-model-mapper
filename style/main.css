@@ -9,12 +9,14 @@ html, body {
 .defaultButton__input {
   display: none; }
 .defaultButton__container {
+  display: inline-block;
   user-select: none; }
 .defaultButton__content {
   padding: 5px;
   border: 1px solid green; }
 .defaultButton__hitbox:active .defaultButton__content {
-  background: red; }
+  background: green;
+  color: white; }
 
 .bindingEditorGroup__container {
   position: absolute;
