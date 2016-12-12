@@ -61,9 +61,7 @@ const buttonTemplate = new Template({name:'Button'},
   `<div class="container">
     <label class="hitbox">
       <input class="input" type="button"/>
-      <div class="content">
-        Press Me
-      </div>
+      <div class="content" data-port></div>
     </label>
   </div>
 `);
@@ -157,6 +155,10 @@ Functions.helloworld.wrapLines = a=>a.join('<br>');
 Functions.helloworld.disableIfNull = (view, model, key)=> model[key] ? view.enable() : view.disable();
 Functions.helloworld.disableIfModelTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'modelText');
 Functions.helloworld.disableIfEventTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'eventText');
+
+Functions.helloworld.saveView = ()=>save();
+Functions.helloworld.loadView = ()=>load();
+Functions.helloworld.clearView = ()=>(localStorage.removeItem('state'), load());
 
 Functions.helloworld.rewriteNullEventText = value=>
   value || `[EventBinding UNAVAILABLE]`;

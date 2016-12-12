@@ -34,6 +34,15 @@ const defaultPresistedState = {
         target: null,
         suggestions: []
       }
+    },
+    {
+      id: 4,
+      name: 'text',
+      properties: {
+        save: 'Save',
+        load: 'Load',
+        clear: 'Clear'
+      }
     }
   ],
   views: [
@@ -51,7 +60,14 @@ const defaultPresistedState = {
 
     {id: 26, path: ['default', 'label'], modelBinding: {id:1, path: 'log', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:13, port: 0}, properties: {name: 'callstack'}},
 
-    {id: 27, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'setText1']}}, parentView: {id:12, port: 0} },
+    {id: 32, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'saveView']}}, parentView: {id:12, port: 0} },
+    {id: 33, path: ['default', 'label'], modelBinding: {id:4, path: 'save'}, parentView: {id:32, port: 0}},
+
+    {id: 34, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'loadView']}}, parentView: {id:12, port: 0} },
+    {id: 35, path: ['default', 'label'], modelBinding: {id:4, path: 'load'}, parentView: {id:34, port: 0}},
+
+    {id: 36, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'clearView']}}, parentView: {id:12, port: 0} },
+    {id: 37, path: ['default', 'label'], modelBinding: {id:4, path: 'clear'}, parentView: {id:36, port: 0}},
 
     {id: 28, path: ['default', 'group'], parentView: {id:11, port: 0}, properties: { name: 'bindingEditor' }},
 
