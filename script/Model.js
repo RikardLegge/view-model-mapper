@@ -83,6 +83,10 @@ class Model extends EventSource {
 
   }
 
+  getValue(path) {
+    path = (path instanceof Array) ? path : [path];
+    return path.reduce((obj, key)=>obj[key], this);
+  }
 
   getPath() {
     return this[parent]
@@ -134,6 +138,10 @@ class EventBinding {
   setModel({modelData, eventSignal}){
     this[model] = modelData || this[model];
     this[signal] = eventSignal || this[signal];
+  }
+
+  getModel(){
+    return this[model];
   }
 }
 
@@ -196,16 +204,16 @@ class ModelBinding {
       this[onChange]();
   }
 
+  getModel(){
+    return this[model];
+  }
+
   [attachListeners]() {
     this[model].listen(this[key], this[onChange]);
   }
 
   [detachListeners]() {
     this[model].unListen(this[key], this[onChange]);
-  }
-
-  static from(){
-
   }
 
 }

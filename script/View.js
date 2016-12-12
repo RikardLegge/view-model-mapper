@@ -62,9 +62,9 @@ class ViewDefinition {
     view.disable = vd.setProp ? ()=>vd.setProp(view, 'disabled', true) : notYetImplemented;
 
     view.construct(view);
+    view.setElement(element, ports, false);
     eventBinding && view.setEventBinding(eventBinding);
     modelBinding && view.setModelBinding(modelBinding, false);
-    view.setElement(element, ports, false);
     view.modelChanged();
 
     return view;
@@ -75,6 +75,7 @@ const element = Symbol();
 const ports = Symbol();
 const eventBinding = Symbol();
 const modelBinding = Symbol();
+const viewMutator = Symbol();
 
 class ViewBinding {
 
@@ -123,6 +124,13 @@ class ViewBinding {
     return this[modelBinding];
   }
 
+  setViewMutator(viewMutatorMethod, triggerChange=true) {
+    this[viewMutator] = viewMutatorMethod;
+
+    if(triggerChange && this[modelBinding])
+      this[viewMutator](this, this[modelBinding].getModel())
+  }
+
   viewSignal(){
     if(!this[eventBinding])
       return;
@@ -142,12 +150,31 @@ class ViewBinding {
       return;
 
     this.setValue(this, this[modelBinding].get());
+    this[viewMutator] && this[viewMutator](this, this[modelBinding].getModel())
   }
 
   setParentView(view, port=0){
     if(view){
       console.assert(view[ports][port], `The port ${port} does not exist on`, view);
       view[ports][port].appendChild(this[element]);
+    }
+  }
+
+  getPortIndex(port){
+    return [...this[ports]].indexOf(port);
+  }
+
+  getParentPort(){
+    return this[element].parentNode;
+  }
+
+  getParentView(){
+    let currentElement = this[element];
+    while(currentElement = currentElement.parentNode){
+      const view = currentElement.boundView;
+      if(view) {
+        return view
+      }
     }
   }
 }

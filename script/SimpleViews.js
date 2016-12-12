@@ -87,7 +87,7 @@ const textTemplate = new Template({},
 `);
 
 const labelTemplate = new Template({},
-  `<div class="Label" data-port></div>
+  `<div class="Label"></div>
 `);
 
 const groupTemplate = new Template({},
@@ -112,16 +112,39 @@ class rawTemplate {
   }
 }
 
-const UI = {};
-UI.default = {};
+const path = Symbol();
+class Registry {
+  constructor(key, parentRegistry) {
+    let path = [];
+    if(key && parentRegistry){
+      path = [parentRegistry[path], key];
+      parentRegistry.register(key, this);
+    }
 
-UI.default.root = ViewFactory.from(new rawTemplate(document.body));
-UI.default.radio = ViewFactory.from(radioTemplate, radioView);
-UI.default.checkbox = ViewFactory.from(checkboxTemplate, checkboxView);
-UI.default.text = ViewFactory.from(textTemplate, textView);
-UI.default.label = ViewFactory.from(labelTemplate, labelView);
-UI.default.button = ViewFactory.from(buttonTemplate, buttonView);
-UI.default.group = ViewFactory.from(groupTemplate);
+    this[path] = path;
+  }
+
+  getKeyForProperty(property){
+    const [key, value] = Object.entries(this).find(([key, value])=>value === property) || [];
+    return key;
+  }
+
+  register(key, value) {
+    this[key] = value;
+    return value;
+  }
+}
+
+const UI = new Registry();
+const defaultUI = new Registry('default', UI);
+
+defaultUI.register('root', ViewFactory.from(new rawTemplate(document.body)));
+defaultUI.register('radio', ViewFactory.from(radioTemplate, radioView));
+defaultUI.register('checkbox', ViewFactory.from(checkboxTemplate, checkboxView));
+defaultUI.register('text', ViewFactory.from(textTemplate, textView));
+defaultUI.register('label', ViewFactory.from(labelTemplate, labelView));
+defaultUI.register('button', ViewFactory.from(buttonTemplate, buttonView));
+defaultUI.register('group', ViewFactory.from(groupTemplate));
 
 const Functions = {};
 
@@ -130,4 +153,14 @@ Functions.helloworld = {};
 
 Functions.helloworld.invert = b=>!b;
 Functions.helloworld.wrapLines = a=>a.join('<br>');
+
+Functions.helloworld.disableIfNull = (view, model, key)=> model[key] ? view.enable() : view.disable();
+Functions.helloworld.disableIfModelTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'modelText');
+Functions.helloworld.disableIfEventTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'eventText');
+
+Functions.helloworld.rewriteNullEventText = value=>
+  value || `[EventBinding UNAVAILABLE]`;
+Functions.helloworld.rewriteNullModelText = value=>
+  value || `[ModelBinding UNAVAILABLE]`;
+
 Functions.helloworld.setText1 = (key, model)=>model['pressed'] = 'Example text';
