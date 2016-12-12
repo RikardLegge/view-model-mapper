@@ -11,6 +11,11 @@ class EventSource {
 
   listen(glob, onChange) {
     this[triggers].push({glob, onChange});
+
+    if(glob.indexOf('*') === -1) {
+      const value = this.getValue(glob);
+      onChange(glob, value, this);
+    }
   }
 
   unListen(_glob, _onChange) {
@@ -18,6 +23,10 @@ class EventSource {
     while((index = this[triggers].findIndex(({glob, onChange})=>glob === _glob && onChange === _onChange)) !== -1){
       this[triggers].splice(index, 1);
     }
+  }
+
+  getValue() {
+    return null;
   }
 
   getParent() {
