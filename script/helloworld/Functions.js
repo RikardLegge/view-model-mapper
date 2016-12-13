@@ -7,10 +7,6 @@ Functions.helloworld.disableIfNull = (view, model, key)=> model[key] !== null ? 
 Functions.helloworld.disableIfModelTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'modelText');
 Functions.helloworld.disableIfEventTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'eventText');
 
-Functions.helloworld.saveView = ()=>save();
-Functions.helloworld.loadView = ()=>load();
-Functions.helloworld.clearView = ()=>(localStorage.removeItem('state'), load());
-
 Functions.helloworld.rewriteNullEventText = value=>
   value !== null ? value : `[EventBinding UNAVAILABLE]`;
 Functions.helloworld.rewriteNullModelText = value=>
