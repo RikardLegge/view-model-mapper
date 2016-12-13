@@ -130,6 +130,10 @@ class EventBinding {
     return this[signal];
   }
 
+  getSignalHandler(){
+    return this[eventHandler];
+  }
+
   getPath(){
     const modelPath = this[model].getPath();
     return [...modelPath, this.getKey()];
@@ -172,6 +176,10 @@ class ModelBinding {
 
   getKey() {
     return this[key];
+  }
+
+  getMiddlewere(){
+    return this[mapper];
   }
 
   listen(onChangeListener) {

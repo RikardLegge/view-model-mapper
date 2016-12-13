@@ -13,9 +13,10 @@ class Template {
     const elementConstructor = document.createElement("div");
     elementConstructor.innerHTML = templateString;
 
-    const ports = elementConstructor.querySelectorAll('[data-port]');
-    const element = elementConstructor.children[0];
+    console.assert(elementConstructor.children.length === 1, `Templates with multiple roots are currently not supported`);
 
+    const ports = this.findPorts(elementConstructor);
+    const element = elementConstructor.children[0];
     return {element, ports};
   }
 
@@ -37,6 +38,11 @@ class Template {
        (_, all, key) => properties[key] || '' )
   }
 
+  findPorts(element){
+    const self = element.hasAttribute('data-port') ? [element] : [];
+    return [...self, ...element.querySelectorAll('[data-port]')];
+  }
+
 }
 
 const viewDefinition = Symbol();
@@ -49,9 +55,10 @@ class ViewBindingDefinition {
     this[viewDefinition] = definition;
   }
 
-  construct(element, {ports, eventBinding, modelBinding}={}){
+  construct(viewProperties){
+
     const vd = this[viewDefinition];
-    const view = new ViewBinding();
+    const view = new ViewBinding(viewProperties);
 
     view.construct = vd.construct || noOp;
     view.getValue = vd.get || noOp;
@@ -62,10 +69,7 @@ class ViewBindingDefinition {
     view.disable = vd.setProp ? ()=>vd.setProp(view, 'disabled', true) : notYetImplemented;
 
     view.construct(view);
-    view.setElement(element, ports, false);
-    eventBinding && view.setEventBinding(eventBinding);
-    modelBinding && view.setModelBinding(modelBinding, false);
-    view.modelChanged();
+    view.redrawElement();
 
     return view;
   }
@@ -79,11 +83,23 @@ const viewMutator = Symbol();
 
 class ViewBinding {
 
-  setElement(viewElement, elementPorts=[], triggerChange=true){
+  constructor({template, properties}){
+    this.template = template;
+    this.templateProperties = properties;
+  }
+
+  redrawElement(){
+    const {element: viewElement, ports: elementPorts} = this.template.construct(this.templateProperties);
+
     const oldElement = this[element];
     if(oldElement){
       this.detachElement(this);
       delete oldElement.boundView;
+
+      const parent = oldElement.parentNode;
+      if(parent){
+        parent.replaceChild(viewElement, oldElement)
+      }
     }
 
     this[element] = viewElement;
@@ -91,17 +107,22 @@ class ViewBinding {
     viewElement.boundView = this;
     this.attachElement(this);
 
-    if(triggerChange)
-      this.modelChanged();
+    this.modelChanged();
   }
 
   getElement(){
     return this[element];
   }
 
+
   setEventBinding(binding){
     this[eventBinding] = binding;
   }
+
+  getEventBinding(){
+    return this[eventBinding];
+  }
+
 
   setModelBinding(binding, triggerChange=true){
     if(this[modelBinding]){
@@ -116,13 +137,10 @@ class ViewBinding {
     }
   }
 
-  getEventBinding(){
-    return this[eventBinding];
-  }
-
   getModelBinding(){
     return this[modelBinding];
   }
+
 
   setViewMutator(viewMutatorMethod, triggerChange=true) {
     this[viewMutator] = viewMutatorMethod;
@@ -130,6 +148,11 @@ class ViewBinding {
     if(triggerChange && this[modelBinding])
       this[viewMutator](this, this[modelBinding].getModel())
   }
+
+  getViewMutator(){
+    return this[viewMutator];
+  }
+
 
   viewSignal(){
     if(!this[eventBinding])
@@ -153,19 +176,12 @@ class ViewBinding {
     this[viewMutator] && this[viewMutator](this, this[modelBinding].getModel())
   }
 
+
   setParentView(view, port=0){
     if(view){
       console.assert(view[ports][port], `The port ${port} does not exist on`, view);
       view[ports][port].appendChild(this[element]);
     }
-  }
-
-  getPortIndex(port){
-    return [...this[ports]].indexOf(port);
-  }
-
-  getParentPort(){
-    return this[element].parentNode;
   }
 
   getParentView(){
@@ -176,6 +192,15 @@ class ViewBinding {
         return view
       }
     }
+  }
+
+  getParentPort(){
+    return this[element].parentNode;
+  }
+
+
+  getPortIndex(port){
+    return [...this[ports]].indexOf(port);
   }
 }
 
@@ -189,13 +214,9 @@ class ViewFactory {
 
   create(options={}){
     const properties = options.properties;
-    const {element, ports} = this.template.construct(properties);
-    const definitionProperties = {
-      modelBinding: options.modelBinding,
-      eventBinding: options.eventBinding,
-      ports
-    };
-    const view = this.viewDefinition.construct(element, definitionProperties);
+    const template = this.template;
+    const view = this.viewDefinition.construct({properties, template});
+    view.__path = this.__path;
 
     view.setParentView(options.parentView);
 
@@ -207,8 +228,3 @@ class ViewFactory {
   }
 }
 
-function $queryIncludeSelf(element, query){
-  const includeSelf = [...element.parentNode.querySelectorAll(query)].indexOf(element) !== -1;
-  const self = includeSelf ? [element] : [];
-  return [...self, ...element.querySelectorAll(query)];
-}

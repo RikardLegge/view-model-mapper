@@ -135,6 +135,10 @@ class DataManager {
     this.metaKey = metaKey;
   }
 
+  getList(){
+    return this.data.map(it=>it[this.metaKey]);
+  }
+
   find(op){
     const def = this.data.find(op);
     return def ? def[this.metaKey] : null;
@@ -249,7 +253,7 @@ class StateParser {
     return {models, unresolvedModelAliases};
   }
 
-  parseViews(obj, models) {
+  parseViews(obj) {
     const views = {};
     const unattachedViews = [];
 
@@ -261,7 +265,7 @@ class StateParser {
       const viewFactory = this.reducePath(UI, path);
       const view = viewFactory.create({properties});
 
-      views[id] = {id, view, properties };
+      views[id] = {id, view };
 
       if(parentViewDef)
         unattachedViews.push({view, id: parentViewDef.id, port: parentViewDef.port});
@@ -275,7 +279,10 @@ class StateParser {
   }
 
   reducePath(obj, path){
-    return path.reduce((obj, path)=>obj[path], obj);
+    const leaf = path.reduce((obj, path)=>obj[path], obj);
+    // TOOD: Move to registry
+    leaf.__path = path;
+    return leaf;
   }
 
 }
@@ -286,81 +293,105 @@ class StateSerializer {
     const header = this.serializeHeader(obj.header);
     const views = this.serializeViews(obj.views, obj.models);
     const models = this.serializeModels(obj.models, obj.views);
-    const viewMutators = this.serializeViewMutators(obj.viewMutators, obj.views);
 
-    return {header, models, views, viewMutators};
+    const viewMutators = this.serializeViewMutators(obj.views);
+    const modelBindings = this.serializeModelBindings(obj.views, obj.models);
+    const eventBindings = this.serializeEventBindings(obj.views, obj.models);
+
+    return {header, models, views, viewMutators, modelBindings, eventBindings};
   }
 
-  serializeViewMutators(obj, views){
-    return obj.viewMutators.map(({view, viewMutator, path})=>{
-      const viewId = views.getMeta(view).id;
-      view.setViewMutator(viewMutator);
+  serializeViewMutators(views){
+    return views.getList()
+      .filter(view=>!!view.getViewMutator())
+      .map(view=>{
+        const id = views.getMeta(view).id;
+        const mutator = view.getViewMutator();
+        const path = mutator.__path;
 
-      return {view:{id: viewId}, mutator: {path}, viewMutator};
-    });
+        return {view:{id}, mutator: {path}};
+      });
   }
 
-  serializeHeader(obj){
-    return {idCounter: obj.idCounter};
+  serializeModelBindings(views, models){
+    return views.getList()
+      .filter(view=>!!view.getModelBinding())
+      .map(view=>{
+        const modelBinding = view.getModelBinding();
+        const model = modelBinding.getModel();
+        const middlewereInstance = modelBinding.getMiddlewere();
+
+        const viewId = views.getMeta(view).id;
+        const modelId = models.getMeta(model).id;
+        const path = modelBinding.getKey();
+        const middlewere = middlewereInstance && middlewereInstance.__path
+          ? {path: middlewereInstance.__path}
+          : undefined;
+
+        return {view: {id: viewId}, model: {id: modelId, path}, middlewere};
+      });
   }
 
-  serializeModels(obj, views) {
-    return obj.models.map(({id, tag: name, model})=>{
-      const aliases = [];
-      const properties = Object.entries(model).reduce((properties, [key, value])=>{
-        if(value instanceof Model) {
-          aliases.push({
-            key, value: {type: 'model', id: obj.getMeta(value).id}
-          });
-        } else if(value instanceof ViewBinding) {
-            aliases.push({
-              key, value: {type: 'view', id: views.getMeta(value).id}
-            });
-        } else if(value && (typeof value === 'object') && value.constructor === Object) {
-          console.error(`Value not serializable`, value);
-        } else {
-          properties[key] = value;
-        }
-        return properties;
-      }, {});
-      return { id, name, properties, aliases };
-    });
+  serializeEventBindings(views, models){
+    return views.getList()
+      .filter(view=>!!view.getEventBinding())
+      .map(view=>{
+        const eventBinding = view.getEventBinding();
+        const model = eventBinding.getModel();
+        const signalHandlerInstance = eventBinding.getSignalHandler();
+
+        const viewId = views.getMeta(view).id;
+        const modelId = models.getMeta(model).id;
+        const signal = eventBinding.getKey();
+        const signalHandler = signalHandlerInstance && signalHandlerInstance.__path
+          ? {path: signalHandlerInstance.__path}
+          : undefined;
+
+        return {view: {id: viewId}, model: {id: modelId}, signal, signalHandler};
+      });
   }
 
-  serializeViews(obj, models) {
-    return obj.views.map(({id, registryPath, view, properties, eventBindingDef, modelBindingDef})=>{
+  serializeHeader(header){
+    return {idCounter: header.idCounter};
+  }
+
+  serializeModels(models, views) {
+    return models.getList()
+      .map((model)=>{
+        const {id, tag: name} = models.getMeta(model);
+        const aliases = [];
+        const properties = Object.entries(model).reduce((properties, [key, value])=>{
+          if(value instanceof Model) {
+            aliases.push({ key, value: {type: 'model', id: models.getMeta(value).id} });
+          } else if(value instanceof ViewBinding) {
+              aliases.push({ key, value: {type: 'view', id: views.getMeta(value).id} });
+          } else if(value && (typeof value === 'object') && value.constructor === Object) {
+            console.error(`Value not serializable`, value);
+          } else {
+            properties[key] = value;
+          }
+          return properties;
+        }, {});
+        return { id, name, properties, aliases };
+      });
+  }
+
+  serializeViews(views) {
+    return views.views.map(({id, view})=>{
+      const properties = view.templateProperties;
+      const path = view.__path;
       const element = view.getElement();
       const index = [...element.parentNode.children].indexOf(element);
-
-      let modelBinding;
-      const modelBindingInstance = view.getModelBinding();
-      if(modelBindingInstance) {
-        const model = modelBindingInstance.getModel();
-        const id = models.getMeta(model).id;
-        const path = modelBindingInstance.getKey();
-
-        modelBinding = {id, path, middlewere: modelBindingDef.middlewereDef};
-      }
-
-      let eventBinding;
-      const eventBindingInstance = view.getEventBinding();
-      if(eventBindingInstance) {
-        const model = eventBindingInstance.getModel();
-        const id = models.getMeta(model).id;
-        const signal = eventBindingInstance.getKey();
-
-        eventBinding = {id, signal, signalHandler: eventBindingDef.signalHandlerDef};
-      }
 
       let parentView;
       let parentViewInstance = view.getParentView();
       if(parentViewInstance){
-        const {id} = obj.getMeta(parentViewInstance);
+        const {id} = views.getMeta(parentViewInstance);
         const port = parentViewInstance.getPortIndex(view.getParentPort());
         parentView = {id, port};
       }
 
-      return {id, index, path: registryPath, modelBinding, eventBinding, parentView, properties};
+      return {id, index, path, parentView, properties};
     });
   }
 }

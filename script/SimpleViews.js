@@ -98,7 +98,7 @@ class rawTemplate {
 
   constructor(element){
     this.element = element;
-    this.ports = $queryIncludeSelf(this.element, '[data-port]');
+    this.ports = element.querySelectorAll('[data-port]');
 
     if(this.ports.length === 0){
       this.ports = [this.element];
@@ -108,6 +108,7 @@ class rawTemplate {
   construct(){
     return {element: this.element, ports: this.ports};
   }
+
 }
 
 const path = Symbol();
@@ -123,12 +124,13 @@ class Registry {
   }
 
   getKeyForProperty(property){
-    const [key, value] = Object.entries(this).find(([key, value])=>value === property) || [];
+    const [key] = Object.entries(this).find(([key, value])=>value === property) || [];
     return key;
   }
 
   register(key, value) {
     this[key] = value;
+    value.__path = this.getKeyForProperty(key);
     return value;
   }
 }
