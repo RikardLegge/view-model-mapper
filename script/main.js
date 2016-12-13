@@ -48,40 +48,61 @@ const defaultPresistedState = {
   views: [
     {id: 11, index: 0, path: ['default', 'root']},
 
-
     {id: 13, index: 1, path: ['default', 'group'], parentView: {id:11, port: 0}, properties:{name:'log'}},
-    {id: 26, index: 0, path: ['default', 'label'], modelBinding: {id:1, path: 'log', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:13, port: 0}, properties: {name: 'callstack'}},
+    {id: 26, index: 0, path: ['default', 'label'], parentView: {id:13, port: 0}, properties: {name: 'callstack'}},
 
 
     {id: 12, index: 0, path: ['default', 'group'], parentView: {id:11, port: 0}},
 
-    {id: 20, index: 0, path: ['default','checkbox'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
-    {id: 21, index: 2, path: ['default', 'checkbox'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
-    {id: 22, index: 1, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
-    {id: 23, index: 3, path: ['default', 'label'], modelBinding: {id:2, path: 'pressed', middlewere: {path:['helloworld', 'invert']}}, parentView: {id:12, port: 0}},
-    {id: 24, index: 4, path: ['default', 'text'], modelBinding: {id:2, path: 'pressed'}, parentView: {id:12, port: 0}},
+    {id: 20, index: 0, path: ['default','checkbox'], parentView: {id:12, port: 0}},
+    {id: 21, index: 2, path: ['default', 'checkbox'], parentView: {id:12, port: 0}},
+    {id: 22, index: 1, path: ['default', 'label'], parentView: {id:12, port: 0}},
+    {id: 23, index: 3, path: ['default', 'label'], parentView: {id:12, port: 0}},
+    {id: 24, index: 4, path: ['default', 'text'], parentView: {id:12, port: 0}},
 
-    {id: 25, index: 5, path: ['default', 'label'], modelBinding: {id:2, path: 'exampleText'}, parentView: {id:12, port: 0}},
+    {id: 25, index: 5, path: ['default', 'label'], parentView: {id:12, port: 0}},
 
     {id: 28, index: 2, path: ['default', 'group'], parentView: {id:11, port: 0}, properties: { name: 'bindingEditor' }},
 
-    {id: 32, index: 0, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'saveView']}}, parentView: {id:28, port: 0} },
-    {id: 33, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'save'}, parentView: {id:32, port: 0}},
+    {id: 32, index: 0, path: ['default', 'button'], parentView: {id:28, port: 0} },
+    {id: 33, index: 0, path: ['default', 'label'], parentView: {id:32, port: 0}},
 
-    {id: 34, index: 1, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'loadView']}}, parentView: {id:28, port: 0} },
-    {id: 35, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'load'}, parentView: {id:34, port: 0}},
+    {id: 34, index: 1, path: ['default', 'button'], parentView: {id:28, port: 0} },
+    {id: 35, index: 0, path: ['default', 'label'], parentView: {id:34, port: 0}},
 
-    {id: 36, index: 2, path: ['default', 'button'], eventBinding: {id: 2, signal: 'signal1', signalHandler: {path:['helloworld', 'clearView']}}, parentView: {id:28, port: 0} },
-    {id: 37, index: 0,path: ['default', 'label'], modelBinding: {id:4, path: 'clear'}, parentView: {id:36, port: 0}},
+    {id: 36, index: 2, path: ['default', 'button'], parentView: {id:28, port: 0} },
+    {id: 37, index: 0, path: ['default', 'label'], parentView: {id:36, port: 0}},
 
-    {id: 29, index: 3, path: ['default', 'label'], modelBinding: {id:3, path: 'suggestions', middlewere: {path:['helloworld', 'wrapLines']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 30, index: 4, path: ['default', 'text'], modelBinding: {id:3, path: 'modelText', middlewere:{path:['helloworld','rewriteNullModelText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 31, index: 5, path: ['default', 'text'], modelBinding: {id:3, path: 'eventText', middlewere:{path:['helloworld','rewriteNullEventText']}}, parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 29, index: 3, path: ['default', 'label'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 30, index: 4, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 31, index: 5, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
   ],
 
   viewMutators: [
-    {view: {id: 30}, path:['helloworld','disableIfModelTextNull']},
-    {view: {id: 31}, path:['helloworld','disableIfEventTextNull']},
+    {view: {id: 30}, mutator: {path:['helloworld','disableIfModelTextNull']}},
+    {view: {id: 31}, mutator: {path:['helloworld','disableIfEventTextNull']}},
+  ],
+
+  modelBindings: [
+    {view: {id: 26}, model: {id: 1, path: 'log'}, middlewere: {path:['helloworld', 'wrapLines']}},
+    {view: {id: 20}, model: {id: 2, path: 'pressed'}},
+    {view: {id: 21}, model: {id: 2, path: 'pressed'}, middlewere: {path:['helloworld', 'invert']}},
+    {view: {id: 22}, model: {id: 2, path: 'pressed'}},
+    {view: {id: 23}, model: {id: 2, path: 'pressed'}, middlewere: {path:['helloworld', 'invert']}},
+    {view: {id: 24}, model: {id: 2, path: 'pressed'}},
+    {view: {id: 25}, model: {id: 2, path: 'exampleText'}},
+    {view: {id: 33}, model: {id: 4, path: 'save'}},
+    {view: {id: 35}, model: {id: 4, path: 'load'}},
+    {view: {id: 37}, model: {id: 4, path: 'clear'}},
+    {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middlewere: {path:['helloworld', 'wrapLines']}},
+    {view: {id: 30}, model: {id: 3, path: 'modelText'}, middlewere:{path:['helloworld','rewriteNullModelText']}},
+    {view: {id: 31}, model: {id: 3, path: 'eventText'}, middlewere:{path:['helloworld','rewriteNullEventText']}}
+  ],
+
+  eventBindings: [
+    {view: {id: 32}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['helloworld', 'saveView']}},
+    {view: {id: 34}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['helloworld', 'loadView']}},
+    {view: {id: 36}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['helloworld', 'clearView']}},
   ]
 };
 
@@ -96,11 +117,10 @@ class StatePersistor {
   }
 
   importState(obj) {
-    const {header, models, views, viewMutators} = this.stateParser.parse(obj);
+    const {header, models, views} = this.stateParser.parse(obj);
     this.header = header;
     this.models = models;
     this.views = views;
-    this.viewMutators = viewMutators;
   }
 
   exportState() {
@@ -147,37 +167,53 @@ class ViewManager extends DataManager{
   }
 }
 
-class ViewMutatorManager extends DataManager{
-  constructor(viewMutators){
-    super(viewMutators, 'viewMutator');
-    this.viewMutators = viewMutators;
-  }
-}
-
 class StateParser {
 
   parse(obj) {
     const header = this.parseHeader(obj.header);
     const {models, unresolvedModelAliases} = this.parseModels(obj.models);
     const views = this.parseViews(obj.views, models);
-    const viewMutators = this.parseViewMutators(obj.viewMutators, views);
 
     this.resolveModelAliases(unresolvedModelAliases, models, views);
 
-    return {header, models, views, viewMutators};
+    this.parseModelBindings(obj.modelBindings, models, views);
+    this.parseEventBindings(obj.eventBindings, models, views);
+    this.parseViewMutators(obj.viewMutators, views);
+
+    return {header, models, views};
+  }
+
+  parseModelBindings(obj, models, views){
+    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middlewere: middlewereDef})=>{
+      const model = models.findById(modelId);
+      const view = views.findById(viewId);
+
+      const middlewere = middlewereDef && this.reducePath(Functions, middlewereDef.path);
+      const modelBinding = new ModelBinding(model, modelPath, middlewere);
+
+      view.setModelBinding(modelBinding);
+    });
+  }
+
+  parseEventBindings(obj, models, views){
+    obj.forEach(({view:{id: viewId}, model:{id: modelId}, signal, signalHandler: signalHandlerDef})=>{
+      const model = models.findById(modelId);
+      const view = views.findById(viewId);
+
+      const signalHandler = signalHandlerDef && this.reducePath(Functions, signalHandlerDef.path);
+      const modelBinding = new EventBinding(model, signal, signalHandler);
+
+      view.setEventBinding(modelBinding);
+    });
   }
 
   parseViewMutators(obj, views){
-    const viewMutators =  obj.map(({view:{id:viewId}, path})=>{
+    obj.forEach(({view:{id:viewId}, mutator:{path}})=>{
       const viewMutator = this.reducePath(Functions, path);
       const view = views.findById(viewId);
 
       view.setViewMutator(viewMutator);
-
-      return {view, path, viewMutator};
     });
-
-    return new ViewMutatorManager(viewMutators);
   }
 
   parseHeader(obj){
@@ -218,45 +254,21 @@ class StateParser {
     const unattachedViews = [];
 
     obj.sort((a, b)=>a.index - b.index).forEach(({path, properties={}, id,
-      modelBinding: modelBindingDef,
-      eventBinding: eventBindingDef,
       parentView: parentViewDef
     })=>{
       properties.name = properties.name === undefined ? 'default' : properties.name;
 
-      let modelBinding;
-      let middlewereDef;
-      if(modelBindingDef){
-        middlewereDef = modelBindingDef.middlewere;
-        const middlewere = middlewereDef && this.reducePath(Functions, middlewereDef.path);
-        const model = models.findById(modelBindingDef.id);
-        modelBinding = model && modelBindingDef && new ModelBinding(model, modelBindingDef.path, middlewere);
-      }
-
-      let eventBinding;
-      let signalHandlerDef;
-      if(eventBindingDef) {
-        signalHandlerDef = eventBindingDef.signalHandler;
-        const signalHandler = signalHandlerDef && this.reducePath(Functions, signalHandlerDef.path);
-        const model = models.findById(eventBindingDef.id);
-        eventBinding = eventBindingDef && new EventBinding(model, eventBindingDef.signal, signalHandler);
-      }
-
       const viewFactory = this.reducePath(UI, path);
-      const view = viewFactory.create({modelBinding, eventBinding, properties});
+      const view = viewFactory.create({properties});
 
-      views[id] = {id, view, properties,
-        registryPath: path,
-        eventBindingDef: {signalHandlerDef: signalHandlerDef},
-        modelBindingDef: {middlewereDef: middlewereDef}
-      };
+      views[id] = {id, view, properties };
 
       if(parentViewDef)
-        unattachedViews.push({view, parentViewDef});
+        unattachedViews.push({view, id: parentViewDef.id, port: parentViewDef.port});
     });
 
-    unattachedViews.forEach(({view, parentViewDef})=>{
-      view.setParentView(views[parentViewDef.id].view, parentViewDef.port)
+    unattachedViews.forEach(({view, id, port})=>{
+      view.setParentView(views[id].view, port)
     });
 
     return new ViewManager(Object.values(views));
@@ -284,7 +296,7 @@ class StateSerializer {
       const viewId = views.getMeta(view).id;
       view.setViewMutator(viewMutator);
 
-      return {view:{id: viewId}, path, viewMutator};
+      return {view:{id: viewId}, mutator: {path}, viewMutator};
     });
   }
 
@@ -365,8 +377,15 @@ function load(){
   const statePersistor = new StatePersistor();
   statePersistor.importState(presistedState);
 
+
+
   const applicationModel = statePersistor.models.findByTag('application');
   enableLogger(applicationModel, ['frameCount']);
+
+  requestAnimationFrame(function next(){
+    applicationModel.frameCount++;
+    requestAnimationFrame(next);
+  });
 
   save = function(){
     const json = JSON.stringify(statePersistor.exportState());
@@ -399,8 +418,8 @@ function bindingEditor(editorModel, applicationModel) {
       editorModel.eventText = eventBinding ? eventBinding.getPath().join('.') : null;
       editorModel.modelText = modelBinding ? modelBinding.getPath().join('.') : null;
     } else {
-      editorModel.eventText = '';
-      editorModel.modelText = '';
+      editorModel.eventText = null;
+      editorModel.modelText = null;
     }
   });
 

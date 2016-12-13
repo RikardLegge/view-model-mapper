@@ -43,7 +43,7 @@ const viewDefinition = Symbol();
 const noOp = ()=>{};
 const notYetImplemented = ()=>{throw "Not yet implemented"};
 
-class ViewDefinition {
+class ViewBindingDefinition {
 
   constructor(definition = {}){
     this[viewDefinition] = definition;
@@ -179,7 +179,7 @@ class ViewBinding {
   }
 }
 
-const defaultViewDefinition = new ViewDefinition();
+const defaultViewDefinition = new ViewBindingDefinition();
 class ViewFactory {
 
   constructor(template, viewDefinition=defaultViewDefinition){

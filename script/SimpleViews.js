@@ -1,4 +1,4 @@
-const checkboxView = new ViewDefinition({
+const checkboxView = new ViewBindingDefinition({
   construct: view => view.eventListener = view.viewChanged.bind(view),
 
   get: view => !!view.inputElement.checked,
@@ -11,7 +11,7 @@ const checkboxView = new ViewDefinition({
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
 });
 
-const buttonView = new ViewDefinition({
+const buttonView = new ViewBindingDefinition({
   construct: view => view.eventListener = view.viewSignal.bind(view),
 
   get: view => view.inputElement.value,
@@ -23,7 +23,7 @@ const buttonView = new ViewDefinition({
   detach: view => view.inputElement.removeEventListener('click', view.eventListener)
 });
 
-const radioView = new ViewDefinition({
+const radioView = new ViewBindingDefinition({
   construct: view => view.eventListener = view.viewChanged.bind(view),
 
   get: view => view.inputElement.value,
@@ -36,7 +36,7 @@ const radioView = new ViewDefinition({
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
 });
 
-const textView = new ViewDefinition({
+const textView = new ViewBindingDefinition({
   construct: view => view.eventListener = view.viewChanged.bind(view),
 
   get: view => view.inputElement.value,
@@ -53,7 +53,7 @@ const textView = new ViewDefinition({
   detach: view => view.inputElement.removeEventListener('change', view.eventListener)
 });
 
-const labelView = new ViewDefinition({
+const labelView = new ViewBindingDefinition({
   set: (view, value) => view.getElement().innerHTML = value,
 });
 
@@ -152,7 +152,7 @@ Functions.helloworld = {};
 Functions.helloworld.invert = b=>!b;
 Functions.helloworld.wrapLines = a=>a.join('<br>');
 
-Functions.helloworld.disableIfNull = (view, model, key)=> model[key] ? view.enable() : view.disable();
+Functions.helloworld.disableIfNull = (view, model, key)=> model[key] !== null ? view.enable() : view.disable();
 Functions.helloworld.disableIfModelTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'modelText');
 Functions.helloworld.disableIfEventTextNull = (view, model)=>Functions.helloworld.disableIfNull(view, model, 'eventText');
 
@@ -161,8 +161,8 @@ Functions.helloworld.loadView = ()=>load();
 Functions.helloworld.clearView = ()=>(localStorage.removeItem('state'), load());
 
 Functions.helloworld.rewriteNullEventText = value=>
-  value || `[EventBinding UNAVAILABLE]`;
+  value !== null ? value : `[EventBinding UNAVAILABLE]`;
 Functions.helloworld.rewriteNullModelText = value=>
-  value || `[ModelBinding UNAVAILABLE]`;
+  value !== null ? value : `[ModelBinding UNAVAILABLE]`;
 
 Functions.helloworld.setText1 = (key, model)=>model['pressed'] = 'Example text';
