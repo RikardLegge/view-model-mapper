@@ -196,7 +196,7 @@ class StateParser {
       const modelBinding = new ModelBinding();
       modelBinding.properties = {model, middlewere, key: modelPath};
 
-      view.setModelBinding(modelBinding);
+      view.modelBinding = modelBinding;
     });
   }
 
@@ -206,9 +206,9 @@ class StateParser {
       const view = views.findById(viewId);
 
       const signalHandler = signalHandlerDef && this.reducePath(Functions, signalHandlerDef.path);
-      const modelBinding = new EventBinding(model, signal, signalHandler);
+      const eventBinding = new EventBinding(model, signal, signalHandler);
 
-      view.setEventBinding(modelBinding);
+      view.eventBinding = eventBinding;
     });
   }
 
@@ -217,7 +217,7 @@ class StateParser {
       const viewMutator = this.reducePath(Functions, path);
       const view = views.findById(viewId);
 
-      view.setViewMutator(viewMutator);
+      view.viewMutator = viewMutator;
     });
   }
 
@@ -273,7 +273,7 @@ class StateParser {
     });
 
     unattachedViews.forEach(({view, id, port})=>{
-      view.setParentView(views[id].view, port)
+      view.parentView = {view: views[id].view, port};
     });
 
     return new ViewManager(Object.values(views));
@@ -304,10 +304,10 @@ class StateSerializer {
 
   serializeViewMutators(views){
     return views.getList()
-      .filter(view=>!!view.getViewMutator())
+      .filter(view=>!!view.viewMutator)
       .map(view=>{
         const id = views.getMeta(view).id;
-        const mutator = view.getViewMutator();
+        const mutator = view.viewMutator;
         const path = mutator.__path;
 
         return {view:{id}, mutator: {path}};
@@ -316,9 +316,9 @@ class StateSerializer {
 
   serializeModelBindings(views, models){
     return views.getList()
-      .filter(view=>!!view.getModelBinding())
+      .filter(view=>!!view.modelBinding)
       .map(view=>{
-        const modelBinding = view.getModelBinding();
+        const modelBinding = view.modelBinding;
         const model = modelBinding.model;
         const middlewereInstance = modelBinding.middlewere;
 
@@ -335,9 +335,9 @@ class StateSerializer {
 
   serializeEventBindings(views, models){
     return views.getList()
-      .filter(view=>!!view.getEventBinding())
+      .filter(view=>!!view.eventBinding)
       .map(view=>{
-        const eventBinding = view.getEventBinding();
+        const eventBinding = view.eventBinding;
         const model = eventBinding.model;
         const signalHandlerInstance = eventBinding.signalHandler;
 
@@ -381,14 +381,14 @@ class StateSerializer {
     return views.views.map(({id, view})=>{
       const properties = view.templateProperties;
       const path = view.__path;
-      const element = view.getElement();
+      const element = view.element;
       const index = [...element.parentNode.children].indexOf(element);
 
       let parentView;
-      let parentViewInstance = view.getParentView();
+      let parentViewInstance = view.parentView;
       if(parentViewInstance){
         const {id} = views.getMeta(parentViewInstance);
-        const port = parentViewInstance.getPortIndex(view.getParentPort());
+        const port = parentViewInstance.getPortIndex(view.parentPort);
         parentView = {id, port};
       }
 
@@ -442,10 +442,10 @@ function bindingEditor(editorModel, applicationModel) {
   editorModel.listen('target', () => {
     const target = editorModel.target;
     if(target){
-      editorModel.target.getElement().style = 'background:rgba(200,200,100, .4)';
+      editorModel.target.element.style = 'background:rgba(200,200,100, .4)';
 
-      const modelBinding = target.getModelBinding();
-      const eventBinding = target.getEventBinding();
+      const modelBinding = target.modelBinding;
+      const eventBinding = target.eventBinding;
 
       editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
       editorModel.modelText = modelBinding ? modelBinding.path.join('.') : null;
@@ -459,14 +459,14 @@ function bindingEditor(editorModel, applicationModel) {
   editorModel.listen('eventText', updateEventBinding);
 
   function updateEventBinding(){
-    if (!editorModel.target || !editorModel.target.getEventBinding()) {
+    if (!editorModel.target || !editorModel.target.eventBinding) {
       return;
     }
-    editorModel.target.getEventBinding().signal = editorModel.eventText;
+    editorModel.target.eventBinding.signal = editorModel.eventText;
   }
 
   function updateModelBinding(){
-    if (!editorModel.target || !editorModel.target.getModelBinding()) {
+    if (!editorModel.target || !editorModel.target.modelBinding) {
       editorModel.suggestions = [];
       return;
     }
@@ -485,11 +485,11 @@ function bindingEditor(editorModel, applicationModel) {
     if (path) {
       const fullPath = path.map(path => path.key).join('.');
 
-      if(fullPath === editorModel.target.getModelBinding().path.join('.')){
+      if(fullPath === editorModel.target.modelBinding.path.join('.')){
         return;
       }
 
-      editorModel.target.getModelBinding().properties = path.pop();
+      editorModel.target.modelBinding.properties = path.pop();
       console.log(`Model set to ${fullPath}`);
     }
   }
@@ -505,7 +505,7 @@ function bindingEditor(editorModel, applicationModel) {
     return path.find(element => {
       const view = element.boundView;
       if(view !== undefined){
-        if(view.getModelBinding() || view.getEventBinding()){
+        if(view.modelBinding || view.eventBinding){
           return true;
         }
       }
@@ -517,10 +517,10 @@ function bindingEditor(editorModel, applicationModel) {
   function setTarget(element) {
 
     if (editorModel.target) {
-      const targetElement = editorModel.target.getElement();
+      const targetElement = editorModel.target.element;
       if(element === targetElement)
         return;
-      editorModel.target.getElement().style = '';
+      editorModel.target.element.style = '';
     }
 
     if (element) {
