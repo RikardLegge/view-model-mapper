@@ -193,7 +193,8 @@ class StateParser {
       const view = views.findById(viewId);
 
       const middlewere = middlewereDef && this.reducePath(Functions, middlewereDef.path);
-      const modelBinding = new ModelBinding(model, modelPath, middlewere);
+      const modelBinding = new ModelBinding();
+      modelBinding.properties = {model, middlewere, key: modelPath};
 
       view.setModelBinding(modelBinding);
     });
@@ -318,12 +319,12 @@ class StateSerializer {
       .filter(view=>!!view.getModelBinding())
       .map(view=>{
         const modelBinding = view.getModelBinding();
-        const model = modelBinding.getModel();
-        const middlewereInstance = modelBinding.getMiddlewere();
+        const model = modelBinding.model;
+        const middlewereInstance = modelBinding.middlewere;
 
         const viewId = views.getMeta(view).id;
         const modelId = models.getMeta(model).id;
-        const path = modelBinding.getKey();
+        const path = modelBinding.key;
         const middlewere = middlewereInstance && middlewereInstance.__path
           ? {path: middlewereInstance.__path}
           : undefined;
@@ -337,12 +338,12 @@ class StateSerializer {
       .filter(view=>!!view.getEventBinding())
       .map(view=>{
         const eventBinding = view.getEventBinding();
-        const model = eventBinding.getModel();
-        const signalHandlerInstance = eventBinding.getSignalHandler();
+        const model = eventBinding.model;
+        const signalHandlerInstance = eventBinding.signalHandler;
 
         const viewId = views.getMeta(view).id;
         const modelId = models.getMeta(model).id;
-        const signal = eventBinding.getKey();
+        const signal = eventBinding.signal;
         const signalHandler = signalHandlerInstance && signalHandlerInstance.__path
           ? {path: signalHandlerInstance.__path}
           : undefined;
@@ -446,8 +447,8 @@ function bindingEditor(editorModel, applicationModel) {
       const modelBinding = target.getModelBinding();
       const eventBinding = target.getEventBinding();
 
-      editorModel.eventText = eventBinding ? eventBinding.getPath().join('.') : null;
-      editorModel.modelText = modelBinding ? modelBinding.getPath().join('.') : null;
+      editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
+      editorModel.modelText = modelBinding ? modelBinding.path.join('.') : null;
     } else {
       editorModel.eventText = null;
       editorModel.modelText = null;
@@ -461,9 +462,7 @@ function bindingEditor(editorModel, applicationModel) {
     if (!editorModel.target || !editorModel.target.getEventBinding()) {
       return;
     }
-
-    const signal = editorModel.eventText;
-    editorModel.target.getEventBinding().setModel({signal});
+    editorModel.target.getEventBinding().signal = editorModel.eventText;
   }
 
   function updateModelBinding(){
@@ -486,12 +485,11 @@ function bindingEditor(editorModel, applicationModel) {
     if (path) {
       const fullPath = path.map(path => path.key).join('.');
 
-      if(fullPath === editorModel.target.getModelBinding().getPath().join('.')){
+      if(fullPath === editorModel.target.getModelBinding().path.join('.')){
         return;
       }
 
-      const modelDef = path.pop();
-      editorModel.target.getModelBinding().setModel({modelData: modelDef.model, propertyKey: modelDef.key});
+      editorModel.target.getModelBinding().properties = path.pop();
       console.log(`Model set to ${fullPath}`);
     }
   }

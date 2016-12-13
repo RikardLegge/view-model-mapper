@@ -111,16 +111,14 @@ class rawTemplate {
 
 }
 
-const path = Symbol();
 class Registry {
   constructor(key, parentRegistry) {
-    let path = [];
     if(key && parentRegistry){
-      path = [parentRegistry[path], key];
+      this.path = [parentRegistry.path, key];
       parentRegistry.register(key, this);
+    } else {
+      this.path = [];
     }
-
-    this[path] = path;
   }
 
   getKeyForProperty(property){

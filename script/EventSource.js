@@ -1,6 +1,6 @@
-const triggers = Symbol();
-const callStack = Symbol();
-const allowEventBubbling = Symbol();
+const triggers = Symbol('triggers');
+const callStack = Symbol(`callStack`);
+const allowEventBubbling = Symbol(`allowEventBubbling`);
 
 class EventSource {
   constructor(){
@@ -13,7 +13,7 @@ class EventSource {
     this[triggers].push({glob, onChange});
 
     if(glob.indexOf('*') === -1) {
-      const value = this.getValue(glob);
+      const value = this.traversePath(glob);
       onChange(glob, value, this);
     }
   }
@@ -25,12 +25,8 @@ class EventSource {
     }
   }
 
-  getValue() {
+  traversePath() {
     return null;
-  }
-
-  getParent() {
-    return {};
   }
 
   trigger(key, value) {
@@ -45,7 +41,7 @@ class EventSource {
       .forEach(({onChange}) => onChange(key, value, this));
 
     if(this[allowEventBubbling]) {
-      const {model: parent, key: parentKey} = this.getParent();
+      const {model: parent, key: parentKey} = this.parent;
       if (parent instanceof EventSource) {
         parent.trigger(`${parentKey}.${key}`, value, this);
       }

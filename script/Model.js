@@ -1,7 +1,7 @@
-const parent = Symbol();
-const autoSetPath = Symbol();
-const unSetPath = Symbol();
-const ignoreEqualSet = Symbol();
+const parentDescriptor = Symbol(`parentDescriptor`);
+const autoSetPath = Symbol(`autoSetPath`);
+const unSetPath = Symbol(`unSetPath`);
+const ignoreEqualSet = Symbol(`ignoreEqualSet`);
 
 class Model extends EventSource {
 
@@ -13,16 +13,15 @@ class Model extends EventSource {
 
   [autoSetPath](model, key){
     if(model instanceof Model){
-      model.setPath(this, key);
+      model.path = {model:this, key};
     }
   }
 
   [unSetPath](model){
     if(model instanceof Model){
-      model.setPath(null, null);
+      model.path = null;
     }
   }
-
 
   addValueProperty(key, startValue){
     let value = startValue;
@@ -83,159 +82,28 @@ class Model extends EventSource {
 
   }
 
-  getValue(path) {
+  traversePath(path) {
     path = (path instanceof Array) ? path : [path];
     return path.reduce((obj, key)=>obj[key], this);
   }
 
-  getPath() {
-    return this[parent]
-      ? [...this[parent].model.getPath(), this[parent].key]
-      : [];
-  }
-
-  getParent() {
-    return this[parent]
-      ? {model: this[parent].model, key: this[parent].key}
-      : {};
-  }
-
-  setPath(model, key) {
-    this[parent] = {model, key};
-  }
-
 }
-
-const model = Symbol();
-const signal = Symbol();
-const eventHandler = Symbol();
-
-class EventBinding {
-
-  constructor(modelData, eventSignal, signalHandler){
-    this[model] = modelData;
-    this[signal] = eventSignal;
-    this[eventHandler] = signalHandler;
+Object.defineProperties(Model.prototype, {
+  parent:{
+    get(){
+      return this[parentDescriptor]
+        ? {model: this[parentDescriptor].model, key: this[parentDescriptor].key}
+        : {};
+    }
+  },
+  path:{
+    get(){
+      return this[parentDescriptor]
+        ? [...this[parentDescriptor].model.path, this[parentDescriptor].key]
+        : [];
+    },
+    set(path){
+      this[parentDescriptor] = path || {};
+    }
   }
-
-  trigger() {
-    this[eventHandler](this.get(), this[model]);
-  }
-
-  get() {
-    return this[signal];
-  }
-
-  getKey() {
-    return this[signal];
-  }
-
-  getSignalHandler(){
-    return this[eventHandler];
-  }
-
-  getPath(){
-    const modelPath = this[model].getPath();
-    return [...modelPath, this.getKey()];
-  }
-
-  setModel({modelData, eventSignal}){
-    this[model] = modelData || this[model];
-    this[signal] = eventSignal || this[signal];
-  }
-
-  getModel(){
-    return this[model];
-  }
-}
-
-const mapper = Symbol();
-const key = Symbol();
-const onChange = Symbol();
-
-const attachListeners = Symbol();
-const detachListeners = Symbol();
-
-class ModelBinding {
-
-  constructor(modelData, propertyKey, dataMapper=(value)=>value){
-    this[model] = modelData;
-    this[key] = propertyKey;
-    this[mapper] = dataMapper;
-    this[onChange] = null;
-  }
-
-  set(value){
-    this[model][this[key]] = this[mapper](value);
-  }
-
-  get(){
-    const value = this[model][this[key]];
-    return this[mapper](value);
-  }
-
-  getKey() {
-    return this[key];
-  }
-
-  getMiddlewere(){
-    return this[mapper];
-  }
-
-  listen(onChangeListener) {
-    this[detachListeners]();
-
-    this[onChange] = onChangeListener;
-
-    this[attachListeners]();
-  }
-
-  unListen(){
-    this[detachListeners]();
-  }
-
-  getPath(){
-    const modelPath = this[model].getPath();
-    return [...modelPath, this.getKey()];
-  }
-
-  setModel({modelData, propertyKey, dataMapper, triggerEvent = true}={}){
-    this[detachListeners]();
-
-    this[model] = modelData || this[model];
-    this[key] = propertyKey || this[key];
-    this[mapper] = dataMapper || this[mapper];
-
-    this[attachListeners]();
-
-    if(triggerEvent)
-      this[onChange]();
-  }
-
-  getModel(){
-    return this[model];
-  }
-
-  [attachListeners]() {
-    this[model].listen(this[key], this[onChange]);
-  }
-
-  [detachListeners]() {
-    this[model].unListen(this[key], this[onChange]);
-  }
-
-}
-
-class ReflectModel {
-  static getPaths(model, root=[]){
-    return Object.entries(model).reduce((paths, [key, value])=>{
-      let path = [...root, {model, key}];
-
-      if(value instanceof Model){
-        paths.push(...ReflectModel.getPaths(value, path))
-      }
-      paths.push(path);
-      return paths;
-    }, []);
-  }
-}
+});
