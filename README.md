@@ -6,12 +6,22 @@ This Project was inspired by the complexity of syncing data in user interfaces w
 
 ## Goals
 
-* [TODO] Drag and drop UI for building a user interface and mapping model data
+* [TODO] Persistable animations
 
-* [TODO] All views are pluggable and will expose ports and connectors. 
+* [TODO] Usage examples
+
+* [TODO] Improve editing UI
+
+* [Partial] Drag and drop UI for building a user interface and mapping model data (Through dev console) 
+
+* [Partial] Middleware is responsible for more complex data manipulation actions as well as data validation and type casting.
+
+* All views are pluggable and will expose ports and connectors. 
 The connections are declarative and can be configured in a sepparate json file.
 
-* [TODO] Middleware is responsible for more complex data manipulation actions as well as data validation and type casting.
+* View mutators sets state properties based on model values
+
+* Moving elements and saving preserves the edited view state.
 
 * Views and data are only connected by data bindings which can be configured by a third party interface.
 
