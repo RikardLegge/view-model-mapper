@@ -4,8 +4,8 @@ class Module {
     this.stateParser = new ModuleParser();
     this.stateSerializer = new ModuleSerializer();
     this.header = {};
-    this.models = [];
-    this.views = [];
+    this.models = null;
+    this.views = null;
   }
 
   load(obj) {
@@ -13,6 +13,12 @@ class Module {
     this.header = header;
     this.models = models;
     this.views = views;
+  }
+
+  addView(view){
+    const id = ++this.header.idCounter;
+    const viewDescriptor = {id, view };
+    this.views.views.push(viewDescriptor);
   }
 
   serialize() {

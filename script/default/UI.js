@@ -40,7 +40,7 @@ const textView = new ViewBindingDefinition({
   construct: view => view.eventListener = view.viewChanged.bind(view),
 
   get: view => view.inputElement.value,
-  set: (view, value) => view.inputElement.value = value,
+  set: (view, value) => view.inputElement.value !== value && (view.inputElement.value = value),
 
   setProp: (view, prop, value) => !!value
     ? view.inputElement.setAttribute(prop, '')
