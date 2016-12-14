@@ -70,8 +70,14 @@ class ModuleParser {
     const modelsSet = {};
     const unresolvedModelAliases = [];
 
-    obj.forEach(({id, name: tag, properties, aliases=[]} )=>{
+    obj.forEach(({id, name: tag, properties, aliases=[], middleware=[]} )=>{
       const model = new Model(properties);
+
+      middleware.forEach(({key, middleware:{path}})=>{
+        const method = this.reducePath(Functions, path);
+        model.addMiddleware(key, method);
+      });
+
       modelsSet[id] = {id, tag, model};
       unresolvedModelAliases.push(...aliases.map(alias=>({model, alias})));
     });
@@ -108,8 +114,9 @@ class ModuleParser {
 
   reducePath(obj, path){
     const leaf = path.reduce((obj, path)=>obj[path], obj);
-    // TOOD: Move to registry
-    leaf.__path = path;
+
+    console.assert(leaf, `Unable to expand path to a value for`, path, obj);
+
     return leaf;
   }
 

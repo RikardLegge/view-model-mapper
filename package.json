@@ -1,0 +1,11 @@
+{
+  "name": "VisualDataMapper",
+  "version": "0.3.0",
+  "main": "index.html",
+  "repository": "https://github.com/RikardLegge/view-model-mapper.git",
+  "author": "Rikard Legge <rikard.legge@gmail.com>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "livereloadx": "^0.3.9"
+  }
+}

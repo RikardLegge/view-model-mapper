@@ -69,21 +69,28 @@ class ModuleSerializer {
   serializeModels(models, views) {
     return models.getList()
       .map((model)=>{
+        const ignoredProperties = ['ignoreEqualSet', 'middleware'];
         const {id, tag: name} = models.getMeta(model);
         const aliases = [];
+        const middleware = Object.entries(model.middleware).reduce((middleware, [key, values])=>{
+          middleware.push(...values.map(value=>({key, middleware: {path: value.__path}})));
+          return middleware;
+        }, []);
         const properties = Object.entries(model).reduce((properties, [key, value])=>{
-          if(value instanceof Model) {
-            aliases.push({ key, value: {type: 'model', id: models.getMeta(value).id} });
-          } else if(value instanceof ViewBinding) {
-            aliases.push({ key, value: {type: 'view', id: views.getMeta(value).id} });
-          } else if(value && (typeof value === 'object') && value.constructor === Object) {
-            console.error(`Value not serializable`, value);
-          } else {
-            properties[key] = value;
+          if(ignoredProperties.indexOf(key) === -1) {
+            if (value instanceof Model) {
+              aliases.push({key, value: {type: 'model', id: models.getMeta(value).id}});
+            } else if (value instanceof ViewBinding) {
+              aliases.push({key, value: {type: 'view', id: views.getMeta(value).id}});
+            } else if (value && (typeof value === 'object') && value.constructor === Object) {
+              console.error(`Value not serializable`, value);
+            } else {
+              properties[key] = value;
+            }
           }
           return properties;
         }, {});
-        return { id, name, properties, aliases };
+        return { id, name, properties, aliases, middleware };
       });
   }
 

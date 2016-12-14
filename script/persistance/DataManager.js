@@ -13,6 +13,15 @@ class DataManager {
     return def ? def[this.metaKey] : null;
   }
 
+  remove(value){
+    const index = this.data.indexOf(value);
+    if(index !== -1){
+      this.data.splice(index, 1);
+    } else {
+      console.warn(`Unable to find value to remove`, this.data, value);
+    }
+  }
+
   findByTag(tag){
     return this.find(it=>it.tag === tag);
   }

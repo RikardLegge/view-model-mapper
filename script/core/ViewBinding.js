@@ -7,9 +7,7 @@ class ViewBinding {
     this.templateProperties = properties;
   }
 
-  redrawElement(){
-    const {element: viewElement, ports: elementPorts} = this.template.construct(this.templateProperties);
-
+  replaceOldElement(element){
     const oldElement = this.element;
     if(oldElement){
       this.detachElement(this);
@@ -17,13 +15,36 @@ class ViewBinding {
 
       const parent = oldElement.parentNode;
       if(parent){
-        parent.replaceChild(viewElement, oldElement)
+        parent.replaceChild(element, oldElement)
       }
     }
+  }
 
-    this[viewBindingData].element = viewElement;
-    this[viewBindingData].ports = [...elementPorts];
-    viewElement.boundView = this;
+  migrateChildViews(ports){
+    const oldPorts = this[viewBindingData].ports || [];
+    oldPorts.forEach((({children: connectors}, index)=> {
+      const port = ports[Math.min(index, ports.length - 1)];
+      [...connectors].forEach(connector => port.appendChild(connector));
+    }));
+  }
+
+  redrawElement(){
+    const {element, ports: portList} = this.template.construct(this.templateProperties);
+    const ports = [...portList];
+
+    const activeElement = document.activeElement;
+
+    this.replaceOldElement(element);
+    this.migrateChildViews(ports);
+
+    if(activeElement !== document.activeElement){
+      activeElement.focus();
+    }
+
+    this[viewBindingData].element = element;
+    this[viewBindingData].ports = ports;
+
+    element.boundView = this;
     this.attachElement(this);
 
     this.modelChanged();

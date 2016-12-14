@@ -13,7 +13,8 @@ html, body {
   user-select: none; }
 .defaultButton__content {
   padding: 5px;
-  border: 1px solid green; }
+  margin: 3px;
+  border: 3px solid blue; }
 .defaultButton__hitbox:active .defaultButton__content {
   background: green;
   color: white; }
@@ -21,6 +22,21 @@ html, body {
   margin: 5px;
   padding: 5px;
   border: 1px solid gray; }
+
+.creatorButton__content {
+  display: inline-block; }
+.creatorButton__input {
+  display: none; }
+.creatorButton__container {
+  display: inline-block;
+  user-select: none; }
+.creatorButton__content {
+  padding: 10px;
+  border: 2px dashed orange; }
+
+.creatorGroup__container {
+  padding: 10px;
+  background: lightgray; }
 
 .bindingEditorGroup__container {
   position: absolute;

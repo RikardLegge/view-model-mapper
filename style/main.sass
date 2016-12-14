@@ -16,7 +16,8 @@ html, body
 
     &__content
       padding: 5px
-      border: 1px solid green
+      margin: 3px
+      border: 3px solid blue
 
     &__hitbox:active &__content
       background: green
@@ -26,6 +27,24 @@ html, body
     margin: 5px
     padding: 5px
     border: 1px solid gray
+
+.creator
+  +button
+
+  &Button
+    &__container
+      display: inline-block
+      user-select: none
+
+    &__content
+      padding: 10px
+      border: 2px dashed orange
+
+.creator
+  &Group
+    &__container
+      padding: 10px
+      background: lightgray
 
 .bindingEditor
   &Group

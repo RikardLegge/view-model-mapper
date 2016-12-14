@@ -1,13 +1,14 @@
-Functions.application = {};
+const applicationF = new Registry('application', Functions);
 
 function main(){
   let module;
 
   const modulePersistor = new LocalStoragePersistor(defaultPersistedState);
-  Functions.application.saveState = ()=>modulePersistor.save();
-  Functions.application.loadState = ()=>reload();
-  Functions.application.clearState = ()=>modulePersistor.clean();
-  Functions.application.addView = (signal, {type, parentId, modelId, modelKey, name='default'})=>{
+
+  applicationF.register('saveState', ()=>modulePersistor.save());
+  applicationF.register('loadState', ()=>reload());
+  applicationF.register('clearState', ()=>modulePersistor.clean());
+  applicationF.register('addView', (signal, {type, parentId, modelId, modelKey, name='default'})=>{
     const parentView = module.views.findById(parseInt(parentId));
     const view = UI.default[type].create({ parentView, properties:{name} });
 
@@ -20,23 +21,23 @@ function main(){
     }
 
     module.addView(view);
-  };
-  Functions.application.addCheckbox = () =>{
-    Functions.application.addView({
-      type: 'checkbox',
-      parentId: 12,
-      modelId: 2,
-      modelKey: 'valid'
-    });
-  };
-
+  });
+  applicationF.register('removeView', (signal, model)=>{
+    const target = model.target;
+    if(target) {
+      const view = module.views.getMeta(target);
+      target.element.remove();
+      module.views.remove(view);
+      model.target = null;
+    }
+  });
   reload();
 
   function reload(){
     module = modulePersistor.load();
 
     const applicationModel = module.models.findByTag('application');
-    enableTicker(applicationModel, 'frameCount');
+    // enableTicker(applicationModel, 'frameCount');
     enableLogger(applicationModel, ['frameCount']);
 
     bindingEditor(module);

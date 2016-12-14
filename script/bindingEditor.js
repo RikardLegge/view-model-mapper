@@ -1,25 +1,43 @@
 function bindingEditor(module) {
-  const applicationModel = module.models.findByTag('application');
   const editorModel = module.models.findByTag('editor');
 
   editorModel.listen('target', () => {
     const target = editorModel.target;
     if(target){
-      editorModel.target.element.style = 'background:rgba(200,200,100, .4)';
+      applyTargetStyle();
 
       const modelBinding = target.modelBinding;
       const eventBinding = target.eventBinding;
 
       editorModel.viewProperties = `id: ` + module.views.getMeta(target).id;
-      editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
-      editorModel.modelText = modelBinding ? modelBinding.path.join('.') : null;
+      editorModel.eventText = eventBinding ? getPathName(eventBinding) : null;
+      editorModel.modelText = modelBinding ? getPathName(modelBinding) : null;
+      editorModel.templateText = target.templateProperties.name;
     } else {
       editorModel.eventText = null;
       editorModel.modelText = null;
+      editorModel.templateText = null;
+    }
+
+    function getPathName(binding){
+      const tagName = module.models.getMeta(binding.model).tag;
+      const property = binding.path[binding.path.length - 1];
+
+      return `${tagName}.${property}`;
     }
   });
   editorModel.listen('modelText', updateModelBinding);
   editorModel.listen('eventText', updateEventBinding);
+  editorModel.listen('templateText', updateTemplate);
+
+  function updateTemplate(){
+    const target = editorModel.target;
+    if(target && target.templateProperties.name !== editorModel.templateText) {
+      target.templateProperties.name = editorModel.templateText;
+      target.redrawElement();
+      applyTargetStyle();
+    }
+  }
 
   function updateEventBinding(){
     if (!editorModel.target || !editorModel.target.eventBinding) {
@@ -33,46 +51,64 @@ function bindingEditor(module) {
       editorModel.suggestions = [];
       return;
     }
-
     const targetPath = editorModel.modelText;
-    const paths = ReflectModel.getPaths(applicationModel);
 
-    editorModel.suggestions = paths
-      .filter(path=>path.map(path => path.key).join('.').indexOf(targetPath) === 0)
-      .map(path=>path.map(path => `<b>${path.key}</b>`).join('.') + ` => ${path[path.length-1].model[path[path.length-1].key]}`);
+    const modelSuggestions = module.models.models.reduce((suggestions, model)=>{
+      const properties = ReflectModel.getPaths(model.model, false);
+      const fullProperties = properties.map(property=>({
+        model: model.model, key: property.key, property, value: property.model[property.key],
+        pathName: `${model.tag}.${property.key}`
+      }));
+      suggestions.push(...fullProperties);
+      return suggestions;
+    }, []);
 
-    const textPaths = paths.map(path=>path.map(path => path.key).join('.'));
-    const index = textPaths.findIndex(path => path === targetPath);
-    const path = paths[index];
+    const suggestions = modelSuggestions
+      .filter(path=>path.pathName.indexOf(targetPath) === 0);
+
+    editorModel.suggestions = suggestions
+      .map(path=>`<b>${path.pathName}</b> => ${path.value}`);
+
+    const path = suggestions.length === 1
+      ? suggestions[0]
+      : null;
 
     if (path) {
-      const fullPath = path.map(path => path.key).join('.');
+      const fullPath = path.pathName;
+      const binding = editorModel.target.modelBinding;
+      const editorModelPath = module.models.getMeta(binding.model).tag +`.`+binding.path.pop();
 
-      if(fullPath === editorModel.target.modelBinding.path.join('.')){
+      if(fullPath === editorModelPath){
         return;
       }
 
-      editorModel.target.modelBinding.properties = path.pop();
-      console.log(`Model set to ${fullPath}`);
+      editorModel.target.modelBinding.properties = {model: path.model, key: path.key};
+      console.log(`Model set to ${fullPath} from ${editorModelPath}`);
+      setTimeout(()=> editorModel.modelText = fullPath, 0);
     }
   }
 
-  document.body.addEventListener('click', (event) => {
-    if(event.altKey) {
-      let element = findViewInPath(event.path);
-      setTarget(element);
+  document.body.addEventListener('mousemove', (event)=>{
+    if(event.shiftKey) {
+      const {pageX: x, pageY: y} = event;
+      const element = document.elementFromPoint(x, y);
+      const view = findViewForElement(element);
+      setTarget(view);
     }
   });
 
-  function findViewInPath(path) {
-    return path.find(element => {
+  function findViewForElement(element) {
+    while(element){
       const view = element.boundView;
-      if(view !== undefined){
-        return true;
+      if(view) {
+        return element;
       }
+      element = element.parentNode;
+    }
+  }
 
-      return false;
-    });
+  function applyTargetStyle(){
+    editorModel.target.element.style = 'border: 4px solid orange';
   }
 
   function setTarget(element) {
@@ -84,7 +120,7 @@ function bindingEditor(module) {
       editorModel.target.element.style = '';
     }
 
-    if (element) {
+    if (element && element !== document.body) {
       editorModel.target = element.boundView;
     } else {
       editorModel.target = null;

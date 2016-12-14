@@ -1,14 +1,22 @@
 const parentDescriptor = Symbol(`parentDescriptor`);
 const autoSetPath = Symbol(`autoSetPath`);
 const unSetPath = Symbol(`unSetPath`);
-const ignoreEqualSet = Symbol(`ignoreEqualSet`);
+const applyMiddleware = Symbol(`applyMiddleware`);
 
 class Model extends EventSource {
 
   constructor(object){
     super();
-    this[ignoreEqualSet] = true;
+    this.ignoreEqualSet = true;
+    this.middleware = {};
     this.attachProperties(object);
+  }
+
+  [applyMiddleware](key, value){
+    const middleware = this.middleware[key];
+    return middleware
+      ? middleware.reduce((value, method)=>method(value), value)
+      : value;
   }
 
   [autoSetPath](model, key){
@@ -23,6 +31,14 @@ class Model extends EventSource {
     }
   }
 
+  addMiddleware(key, method){
+    let middleware = this.middleware[key];
+    if(!middleware){
+      middleware = this.middleware[key] = [];
+    }
+    middleware.push(method);
+  }
+
   addValueProperty(key, startValue){
     let value = startValue;
     Object.defineProperty(this, key, {
@@ -30,7 +46,9 @@ class Model extends EventSource {
       configurable: false,
       get() {return value},
       set(next) {
-        if(this[ignoreEqualSet] && value === next)
+        next = this[applyMiddleware](key, next);
+
+        if(this.ignoreEqualSet && value === next)
           return;
 
         this[unSetPath](value);
