@@ -42,8 +42,7 @@ const defaultPersistedState = {
         save: 'Save',
         load: 'Load',
         clear: 'Clear',
-        create: 'Create view',
-        add_checkbox:"Add checkbox"
+        create: 'Create view'
       }
     },
     {
@@ -85,9 +84,6 @@ const defaultPersistedState = {
     {id: 36, index: 2, path: ['default', 'button'], parentView: {id:28, port: 0} },
     {id: 37, index: 0, path: ['default', 'label'], parentView: {id:36, port: 0}},
 
-    {id: 38, index: 3, path: ['default', 'button'], parentView: {id:28, port: 0} },
-    {id: 39, index: 0, path: ['default', 'label'], parentView: {id:38, port: 0}},
-
     {id: 29, index: 3, path: ['default', 'label'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
     {id: 30, index: 4, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
     {id: 31, index: 5, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
@@ -118,7 +114,6 @@ const defaultPersistedState = {
     {view: {id: 33}, model: {id: 4, path: 'save'}},
     {view: {id: 35}, model: {id: 4, path: 'load'}},
     {view: {id: 37}, model: {id: 4, path: 'clear'}},
-    {view: {id: 39}, model: {id: 4, path: 'add_checkbox'}},
     {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middlewere: {path:['helloworld', 'wrapLines']}},
     {view: {id: 30}, model: {id: 3, path: 'modelText'}, middlewere:{path:['helloworld','rewriteNullModelText']}},
     {view: {id: 31}, model: {id: 3, path: 'eventText'}, middlewere:{path:['helloworld','rewriteNullEventText']}},
@@ -135,7 +130,6 @@ const defaultPersistedState = {
     {view: {id: 32}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['application', 'saveState']}},
     {view: {id: 34}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['application', 'loadState']}},
     {view: {id: 36}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['application', 'clearState']}},
-    {view: {id: 38}, model: {id: 2}, signal: 'signal1', signalHandler: {path:['application', 'addCheckbox']}},
     {view: {id: 44}, model: {id: 5}, signal: 'signal1', signalHandler: {path:['application', 'addView']}},
   ]
 };

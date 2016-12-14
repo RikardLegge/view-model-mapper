@@ -22,7 +22,7 @@ function main(){
   Functions.application.addCheckbox = () =>{
     Functions.application.addView({
       type: 'checkbox',
-      parentId: 11,
+      parentId: 12,
       modelId: 2,
       modelKey: 'valid'
     });
