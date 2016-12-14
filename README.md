@@ -8,13 +8,15 @@ This Project was inspired by the complexity of syncing data in user interfaces w
 
 * [TODO] Persistable animations
 
-* [TODO] Usage examples
+* [TODO] Add usage examples
 
-* [TODO] Improve editing UI
+* [TODO] Create persistable functions and models
+
+* [TODO] Allow arrays in models and arrays of models
 
 * [Partial] Drag and drop UI for building a user interface and mapping model data (Through dev console) 
 
-* [Partial] Middleware is responsible for more complex data manipulation actions as well as data validation and type casting.
+* Middleware is responsible for more complex data manipulation actions as well as data validation and type casting.
 
 * All views are pluggable and will expose ports and connectors. 
 The connections are declarative and can be configured in a sepparate json file.
