@@ -1,16 +1,16 @@
 class LocalStoragePersistor {
 
-  constructor(defaultState){
+  constructor(defaultState) {
     this.defaultState = defaultState;
     this.module = null;
   }
 
-  save(){
+  save() {
     const json = JSON.stringify(this.module.serialize());
     localStorage.setItem('state', json);
   }
 
-  load(){
+  load() {
     this.module = new Module();
 
     const storedState = localStorage.getItem('state');
@@ -24,7 +24,7 @@ class LocalStoragePersistor {
     return this.module;
   }
 
-  clean(){
+  clean() {
     localStorage.removeItem('state');
   }
 }

@@ -1,6 +1,6 @@
 class EventBinding {
 
-  constructor(model, signal, signalHandler){
+  constructor(model, signal, signalHandler) {
     Object.assign(this, {model, signal, signalHandler});
   }
 

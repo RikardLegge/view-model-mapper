@@ -1,6 +1,6 @@
 class Module {
 
-  constructor(){
+  constructor() {
     this.stateParser = new ModuleParser();
     this.stateSerializer = new ModuleSerializer();
     this.header = {};
@@ -15,9 +15,9 @@ class Module {
     this.views = views;
   }
 
-  addView(view){
+  addView(view) {
     const id = ++this.header.idCounter;
-    const viewDescriptor = {id, view };
+    const viewDescriptor = {id, view};
     this.views.views.push(viewDescriptor);
   }
 

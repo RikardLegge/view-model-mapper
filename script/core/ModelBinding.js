@@ -5,22 +5,22 @@ const modelBindingData = Symbol(`modelBindingData`);
 
 class ModelBinding {
 
-  constructor(){
+  constructor() {
     this[boundTriggerChange] = this.trigger.bind(this);
     this[modelBindingData] = {};
   }
 
-  trigger(){
+  trigger() {
     this[modelBindingData].onChange && this[modelBindingData].onChange();
   }
 
   [attachListeners]() {
-    if(this.model)
+    if (this.model)
       this.model.listen(this.key, this[boundTriggerChange]);
   }
 
   [detachListeners]() {
-    if(this.model)
+    if (this.model)
       this.model.unListen(this.key, this[boundTriggerChange]);
   }
 
@@ -76,7 +76,7 @@ Object.defineProperties(ModelBinding.prototype, {
     set(value){
       this[detachListeners]();
 
-      Object.entries(value).forEach(([key, value])=>{
+      Object.entries(value).forEach(([key, value]) => {
         this[modelBindingData][key] = value;
       });
 
@@ -88,7 +88,7 @@ Object.defineProperties(ModelBinding.prototype, {
     set(value){
       this[detachListeners]();
 
-      if(value){
+      if (value) {
         this[modelBindingData].onChange = value;
         this[attachListeners]();
       }

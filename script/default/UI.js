@@ -57,7 +57,7 @@ const labelView = new ViewBindingDefinition({
   set: (view, value) => view.element.innerHTML = value,
 });
 
-const buttonTemplate = new Template({name:'Button'},
+const buttonTemplate = new Template({name: 'Button'},
   `<div class="container">
     <label class="hitbox">
       <input class="input" type="button"/>
@@ -96,16 +96,16 @@ const groupTemplate = new Template({},
 
 class rawTemplate {
 
-  constructor(element){
+  constructor(element) {
     this.element = element;
     this.ports = element.querySelectorAll('[data-port]');
 
-    if(this.ports.length === 0){
+    if (this.ports.length === 0) {
       this.ports = [this.element];
     }
   }
 
-  construct(){
+  construct() {
     return {element: this.element, ports: this.ports};
   }
 

@@ -1,11 +1,11 @@
 class Template {
 
-  constructor(templateProperties, templateString){
+  constructor(templateProperties, templateString) {
     this.templateProperties = templateProperties;
     this.templateString = templateString;
   }
 
-  construct(properties){
+  construct(properties) {
     const templateString = this.compileTemplate(this.templateString, properties);
     const elementConstructor = document.createElement("div");
     elementConstructor.innerHTML = templateString;
@@ -17,7 +17,7 @@ class Template {
     return {element, ports};
   }
 
-  precompileTemplate(templateString, namespace){
+  precompileTemplate(templateString, namespace) {
     const type = this.templateProperties.name
       ? this.templateProperties.name + '__'
       : '';
@@ -26,19 +26,19 @@ class Template {
       .replace(/class=(['"])([^'"]*)\1/g,
         (_, __, all, key) => all
           .split(' ')
-          .filter(cls=>!!cls.trim())
-          .map(cls=>`class="${namespace}${type}${cls}"`)
+          .filter(cls => !!cls.trim())
+          .map(cls => `class="${namespace}${type}${cls}"`)
           .join(' '));
   }
 
-  compileTemplate(templateString, properties={}) {
+  compileTemplate(templateString, properties = {}) {
     const namespace = properties.name || '';
     return this.precompileTemplate(templateString, namespace)
       .replace(/(#\{([^}]*)})/g,
-        (_, all, key) => properties[key] || '' )
+        (_, all, key) => properties[key] || '')
   }
 
-  findPorts(element){
+  findPorts(element) {
     const self = element.hasAttribute('data-port') ? [element] : [];
     return [...self, ...element.querySelectorAll('[data-port]')];
   }

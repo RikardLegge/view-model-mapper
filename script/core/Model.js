@@ -5,41 +5,41 @@ const applyMiddleware = Symbol(`applyMiddleware`);
 
 class Model extends EventSource {
 
-  constructor(object){
+  constructor(object) {
     super();
     this.ignoreEqualSet = true;
     this.middleware = {};
     this.attachProperties(object);
   }
 
-  [applyMiddleware](key, value){
+  [applyMiddleware](key, value) {
     const middleware = this.middleware[key];
     return middleware
-      ? middleware.reduce((value, method)=>method(value), value)
+      ? middleware.reduce((value, method) => method(value), value)
       : value;
   }
 
-  [autoSetPath](model, key){
-    if(model instanceof Model){
-      model.path = {model:this, key};
+  [autoSetPath](model, key) {
+    if (model instanceof Model) {
+      model.path = {model: this, key};
     }
   }
 
-  [unSetPath](model){
-    if(model instanceof Model){
+  [unSetPath](model) {
+    if (model instanceof Model) {
       model.path = null;
     }
   }
 
-  addMiddleware(key, method){
+  addMiddleware(key, method) {
     let middleware = this.middleware[key];
-    if(!middleware){
+    if (!middleware) {
       middleware = this.middleware[key] = [];
     }
     middleware.push(method);
   }
 
-  addValueProperty(key, startValue){
+  addValueProperty(key, startValue) {
     let value = startValue;
     Object.defineProperty(this, key, {
       enumerable: true,
@@ -48,7 +48,7 @@ class Model extends EventSource {
       set(next) {
         next = this[applyMiddleware](key, next);
 
-        if(this.ignoreEqualSet && value === next)
+        if (this.ignoreEqualSet && value === next)
           return;
 
         this[unSetPath](value);
@@ -63,7 +63,7 @@ class Model extends EventSource {
     this[autoSetPath](value, key);
   }
 
-  addMethodProperty(key, get, set, dependencies=[]){
+  addMethodProperty(key, get, set, dependencies = []) {
     Object.defineProperty(this, key, {
       enumerable: true,
       configurable: false,
@@ -78,14 +78,14 @@ class Model extends EventSource {
       }
     });
 
-    dependencies.forEach((dependence)=>{
-      this.listen(dependence, ()=>this.trigger(key, this[key]));
+    dependencies.forEach((dependence) => {
+      this.listen(dependence, () => this.trigger(key, this[key]));
     });
   }
 
-  attachProperties(object){
-    Object.entries(object).forEach(([key, value])=>{
-      if(typeof value === 'function') {
+  attachProperties(object) {
+    Object.entries(object).forEach(([key, value]) => {
+      if (typeof value === 'function') {
         this.addMethodProperty(key, value);
       } else if (
         value &&
@@ -102,19 +102,19 @@ class Model extends EventSource {
 
   traversePath(path) {
     path = (path instanceof Array) ? path : [path];
-    return path.reduce((obj, key)=>obj[key], this);
+    return path.reduce((obj, key) => obj[key], this);
   }
 
 }
 Object.defineProperties(Model.prototype, {
-  parent:{
+  parent: {
     get(){
       return this[parentDescriptor]
         ? {model: this[parentDescriptor].model, key: this[parentDescriptor].key}
         : {};
     }
   },
-  path:{
+  path: {
     get(){
       return this[parentDescriptor]
         ? [...this[parentDescriptor].model.path, this[parentDescriptor].key]

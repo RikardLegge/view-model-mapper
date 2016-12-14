@@ -1,6 +1,6 @@
 class ModuleSerializer {
 
-  serialize(obj){
+  serialize(obj) {
     const header = this.serializeHeader(obj.header);
     const views = this.serializeViews(obj.views, obj.models);
     const models = this.serializeModels(obj.models, obj.views);
@@ -12,22 +12,22 @@ class ModuleSerializer {
     return {header, models, views, viewMutators, modelBindings, eventBindings};
   }
 
-  serializeViewMutators(views){
+  serializeViewMutators(views) {
     return views.getList()
-      .filter(view=>!!view.viewMutator)
-      .map(view=>{
+      .filter(view => !!view.viewMutator)
+      .map(view => {
         const id = views.getMeta(view).id;
         const mutator = view.viewMutator;
         const path = mutator.__path;
 
-        return {view:{id}, mutator: {path}};
+        return {view: {id}, mutator: {path}};
       });
   }
 
-  serializeModelBindings(views, models){
+  serializeModelBindings(views, models) {
     return views.getList()
-      .filter(view=>!!view.modelBinding)
-      .map(view=>{
+      .filter(view => !!view.modelBinding)
+      .map(view => {
         const modelBinding = view.modelBinding;
         const model = modelBinding.model;
         const middlewereInstance = modelBinding.middlewere;
@@ -43,10 +43,10 @@ class ModuleSerializer {
       });
   }
 
-  serializeEventBindings(views, models){
+  serializeEventBindings(views, models) {
     return views.getList()
-      .filter(view=>!!view.eventBinding)
-      .map(view=>{
+      .filter(view => !!view.eventBinding)
+      .map(view => {
         const eventBinding = view.eventBinding;
         const model = eventBinding.model;
         const signalHandlerInstance = eventBinding.signalHandler;
@@ -62,22 +62,22 @@ class ModuleSerializer {
       });
   }
 
-  serializeHeader(header){
+  serializeHeader(header) {
     return {idCounter: header.idCounter};
   }
 
   serializeModels(models, views) {
     return models.getList()
-      .map((model)=>{
+      .map((model) => {
         const ignoredProperties = ['ignoreEqualSet', 'middleware'];
         const {id, tag: name} = models.getMeta(model);
         const aliases = [];
-        const middleware = Object.entries(model.middleware).reduce((middleware, [key, values])=>{
-          middleware.push(...values.map(value=>({key, middleware: {path: value.__path}})));
+        const middleware = Object.entries(model.middleware).reduce((middleware, [key, values]) => {
+          middleware.push(...values.map(value => ({key, middleware: {path: value.__path}})));
           return middleware;
         }, []);
-        const properties = Object.entries(model).reduce((properties, [key, value])=>{
-          if(ignoredProperties.indexOf(key) === -1) {
+        const properties = Object.entries(model).reduce((properties, [key, value]) => {
+          if (ignoredProperties.indexOf(key) === -1) {
             if (value instanceof Model) {
               aliases.push({key, value: {type: 'model', id: models.getMeta(value).id}});
             } else if (value instanceof ViewBinding) {
@@ -90,12 +90,12 @@ class ModuleSerializer {
           }
           return properties;
         }, {});
-        return { id, name, properties, aliases, middleware };
+        return {id, name, properties, aliases, middleware};
       });
   }
 
   serializeViews(views) {
-    return views.views.map(({id, view})=>{
+    return views.views.map(({id, view}) => {
       const properties = view.templateProperties;
       const path = view.__path;
       const element = view.element;
@@ -103,7 +103,7 @@ class ModuleSerializer {
 
       let parentView;
       let parentViewInstance = view.parentView;
-      if(parentViewInstance){
+      if (parentViewInstance) {
         const {id} = views.getMeta(parentViewInstance);
         const port = parentViewInstance.getPortIndex(view.parentPort);
 

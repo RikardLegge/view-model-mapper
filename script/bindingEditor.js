@@ -3,7 +3,7 @@ function bindingEditor(module) {
 
   editorModel.listen('target', () => {
     const target = editorModel.target;
-    if(target){
+    if (target) {
       applyTargetStyle();
 
       const modelBinding = target.modelBinding;
@@ -19,7 +19,7 @@ function bindingEditor(module) {
       editorModel.templateText = null;
     }
 
-    function getPathName(binding){
+    function getPathName(binding) {
       const tagName = module.models.getMeta(binding.model).tag;
       const property = binding.path[binding.path.length - 1];
 
@@ -30,32 +30,32 @@ function bindingEditor(module) {
   editorModel.listen('eventText', updateEventBinding);
   editorModel.listen('templateText', updateTemplate);
 
-  function updateTemplate(){
+  function updateTemplate() {
     const target = editorModel.target;
-    if(target && target.templateProperties.name !== editorModel.templateText) {
+    if (target && target.templateProperties.name !== editorModel.templateText) {
       target.templateProperties.name = editorModel.templateText;
       target.redrawElement();
       applyTargetStyle();
     }
   }
 
-  function updateEventBinding(){
+  function updateEventBinding() {
     if (!editorModel.target || !editorModel.target.eventBinding) {
       return;
     }
     editorModel.target.eventBinding.signal = editorModel.eventText;
   }
 
-  function updateModelBinding(){
+  function updateModelBinding() {
     if (!editorModel.target || !editorModel.target.modelBinding) {
       editorModel.suggestions = [];
       return;
     }
     const targetPath = editorModel.modelText;
 
-    const modelSuggestions = module.models.models.reduce((suggestions, model)=>{
+    const modelSuggestions = module.models.models.reduce((suggestions, model) => {
       const properties = ReflectModel.getPaths(model.model, false);
-      const fullProperties = properties.map(property=>({
+      const fullProperties = properties.map(property => ({
         model: model.model, key: property.key, property, value: property.model[property.key],
         pathName: `${model.tag}.${property.key}`
       }));
@@ -64,10 +64,10 @@ function bindingEditor(module) {
     }, []);
 
     const suggestions = modelSuggestions
-      .filter(path=>path.pathName.indexOf(targetPath) === 0);
+      .filter(path => path.pathName.indexOf(targetPath) === 0);
 
     editorModel.suggestions = suggestions
-      .map(path=>`<b>${path.pathName}</b> => ${path.value}`);
+      .map(path => `<b>${path.pathName}</b> => ${path.value}`);
 
     const path = suggestions.length === 1
       ? suggestions[0]
@@ -76,20 +76,20 @@ function bindingEditor(module) {
     if (path) {
       const fullPath = path.pathName;
       const binding = editorModel.target.modelBinding;
-      const editorModelPath = module.models.getMeta(binding.model).tag +`.`+binding.path.pop();
+      const editorModelPath = module.models.getMeta(binding.model).tag + `.` + binding.path.pop();
 
-      if(fullPath === editorModelPath){
+      if (fullPath === editorModelPath) {
         return;
       }
 
       editorModel.target.modelBinding.properties = {model: path.model, key: path.key};
       console.log(`Model set to ${fullPath} from ${editorModelPath}`);
-      setTimeout(()=> editorModel.modelText = fullPath, 0);
+      setTimeout(() => editorModel.modelText = fullPath, 0);
     }
   }
 
-  document.body.addEventListener('mousemove', (event)=>{
-    if(event.shiftKey) {
+  document.body.addEventListener('mousemove', (event) => {
+    if (event.shiftKey) {
       const {pageX: x, pageY: y} = event;
       const element = document.elementFromPoint(x, y);
       const view = findViewForElement(element);
@@ -98,16 +98,16 @@ function bindingEditor(module) {
   });
 
   function findViewForElement(element) {
-    while(element){
+    while (element) {
       const view = element.boundView;
-      if(view) {
+      if (view) {
         return element;
       }
       element = element.parentNode;
     }
   }
 
-  function applyTargetStyle(){
+  function applyTargetStyle() {
     editorModel.target.element.style = 'border: 4px solid orange';
   }
 
@@ -115,7 +115,7 @@ function bindingEditor(module) {
 
     if (editorModel.target) {
       const targetElement = editorModel.target.element;
-      if(element === targetElement)
+      if (element === targetElement)
         return;
       editorModel.target.element.style = '';
     }

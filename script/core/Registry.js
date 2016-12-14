@@ -1,6 +1,6 @@
 class Registry {
   constructor(key, parentRegistry) {
-    if(key && parentRegistry){
+    if (key && parentRegistry) {
       parentRegistry.register(key, this);
     } else {
       this.__path = [];
