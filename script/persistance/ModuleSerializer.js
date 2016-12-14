@@ -99,6 +99,9 @@ class ModuleSerializer {
       if(parentViewInstance){
         const {id} = views.getMeta(parentViewInstance);
         const port = parentViewInstance.getPortIndex(view.parentPort);
+
+        assert(port >= 0, `Unable to find element port index, please put the following element in a dom node with a [data-port] attribute`, view.element);
+
         parentView = {id, port};
       }
 

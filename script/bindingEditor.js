@@ -1,4 +1,7 @@
-function bindingEditor(editorModel, applicationModel) {
+function bindingEditor(module) {
+  const applicationModel = module.models.findByTag('application');
+  const editorModel = module.models.findByTag('editor');
+
   editorModel.listen('target', () => {
     const target = editorModel.target;
     if(target){
@@ -7,6 +10,7 @@ function bindingEditor(editorModel, applicationModel) {
       const modelBinding = target.modelBinding;
       const eventBinding = target.eventBinding;
 
+      editorModel.viewProperties = `id: ` + module.views.getMeta(target).id;
       editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
       editorModel.modelText = modelBinding ? modelBinding.path.join('.') : null;
     } else {
@@ -64,9 +68,7 @@ function bindingEditor(editorModel, applicationModel) {
     return path.find(element => {
       const view = element.boundView;
       if(view !== undefined){
-        if(view.modelBinding || view.eventBinding){
-          return true;
-        }
+        return true;
       }
 
       return false;

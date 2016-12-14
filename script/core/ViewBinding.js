@@ -68,7 +68,7 @@ Object.defineProperties(ViewBinding.prototype, {
     },
     set({view, port=0}={}){
       if(view){
-        console.assert(view.ports[port], `The port ${port} does not exist on`, view);
+        assert(view.ports[port], `The port ${port} does not exist on`, view);
         view.ports[port].appendChild(this.element);
       }
     }

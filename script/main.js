@@ -11,11 +11,13 @@ function main(){
     const parentView = module.views.findById(parseInt(parentId));
     const view = UI.default[type].create({ parentView, properties:{name} });
 
-    const model = module.models.findById(parseInt(modelId));
-    const key = modelKey;
-    const binding = new ModelBinding();
-    binding.properties = {model, key};
-    view.modelBinding = binding;
+    if(type !== 'group') {
+      const model = module.models.findById(parseInt(modelId));
+      const key = modelKey;
+      const binding = new ModelBinding();
+      binding.properties = {model, key};
+      view.modelBinding = binding;
+    }
 
     module.addView(view);
   };
@@ -37,8 +39,7 @@ function main(){
     enableTicker(applicationModel, 'frameCount');
     enableLogger(applicationModel, ['frameCount']);
 
-    const editorModel = module.models.findByTag('editor');
-    bindingEditor(editorModel, applicationModel);
+    bindingEditor(module);
 
     function enableTicker(model, property){
       requestAnimationFrame(function next(){

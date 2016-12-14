@@ -50,11 +50,11 @@ class Model extends EventSource {
       enumerable: true,
       configurable: false,
       get() {
-        console.assert(get, `A get method was not provided for ${key} in `, this);
+        assert(get, `A get method was not provided for ${key} in `, this);
         return get(this);
       },
       set(value) {
-        console.assert(set, `A set method was not provided for ${key} in `, this);
+        assert(set, `A set method was not provided for ${key} in `, this);
         set(this, value);
         this.trigger(key, get(this));
       }

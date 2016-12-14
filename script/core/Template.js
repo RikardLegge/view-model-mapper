@@ -10,7 +10,7 @@ class Template {
     const elementConstructor = document.createElement("div");
     elementConstructor.innerHTML = templateString;
 
-    console.assert(elementConstructor.children.length === 1, `Templates with multiple roots are currently not supported`);
+    assert(elementConstructor.children.length === 1, `Templates with multiple roots are currently not supported`);
 
     const ports = this.findPorts(elementConstructor);
     const element = elementConstructor.children[0];

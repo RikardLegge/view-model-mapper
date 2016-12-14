@@ -28,6 +28,7 @@ const defaultPersistedState = {
       id: 3,
       name: 'editor',
       properties: {
+        viewProperties: '',
         modelText: '',
         viewText: '',
         eventText: '',
@@ -85,8 +86,9 @@ const defaultPersistedState = {
     {id: 37, index: 0, path: ['default', 'label'], parentView: {id:36, port: 0}},
 
     {id: 29, index: 3, path: ['default', 'label'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 30, index: 4, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
-    {id: 31, index: 5, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 30, index: 5, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 31, index: 6, path: ['default', 'text'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 46, index: 4, path: ['default', 'label'], parentView: {id:28, port: 0}, properties: {name: 'bindingEditor'}},
 
     {id: 14, index: 3, path: ['default', 'group'], parentView: {id:11, port: 0}, properties: { name: '' }},
     {id: 40, index: 0, path: ['default', 'text'], parentView: {id:14, port: 0}, properties: { name: '' }},
@@ -124,6 +126,7 @@ const defaultPersistedState = {
     {view: {id: 43}, model: {id: 5, path: 'modelKey'}},
     {view: {id: 44}, model: {id: 5, path: 'name'}},
     {view: {id: 45}, model: {id: 4, path: 'create'}},
+    {view: {id: 46}, model: {id: 3, path: 'viewProperties'}},
   ],
 
   eventBindings: [

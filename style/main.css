@@ -17,6 +17,10 @@ html, body {
 .defaultButton__hitbox:active .defaultButton__content {
   background: green;
   color: white; }
+.defaultGroup__container {
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid gray; }
 
 .bindingEditorGroup__container {
   position: absolute;
