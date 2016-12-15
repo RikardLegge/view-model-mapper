@@ -7,5 +7,9 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "livereloadx": "^0.3.9"
+  },
+  "scripts": {
+    "watchsass": "sass --sourcemap=none --watch style/main.sass:style/main.css",
+    "livereload": "livereloadx style"
   }
 }
