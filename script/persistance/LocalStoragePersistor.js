@@ -1,30 +1,26 @@
 class LocalStoragePersistor {
 
-  constructor(defaultState) {
-    this.defaultState = defaultState;
-    this.module = null;
+  constructor() { }
+
+  save(key, module) {
+    const json = JSON.stringify(module.serialize());
+    localStorage.setItem(key, json);
   }
 
-  save() {
-    const json = JSON.stringify(this.module.serialize());
-    localStorage.setItem('state', json);
-  }
+  load(key, defaultModule) {
+    const module = new Module();
 
-  load() {
-    this.module = new Module();
-
-    const storedState = localStorage.getItem('state');
+    const storedState = localStorage.getItem(key);
     const persistedState = storedState
       ? JSON.parse(storedState)
-      : this.defaultState;
+      : defaultModule;
 
-    document.body.innerHTML = '';
-    this.module.load(persistedState);
+    module.load(persistedState);
 
-    return this.module;
+    return module;
   }
 
-  clean() {
-    localStorage.removeItem('state');
+  clean(key) {
+    localStorage.removeItem(key);
   }
 }

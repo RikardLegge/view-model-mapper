@@ -15,12 +15,12 @@ class ModelBinding {
   }
 
   [attachListeners]() {
-    if (this.model)
+    if (this.model && this.key)
       this.model.listen(this.key, this[boundTriggerChange]);
   }
 
   [detachListeners]() {
-    if (this.model)
+    if (this.model && this.key)
       this.model.unListen(this.key, this[boundTriggerChange]);
   }
 
@@ -30,12 +30,12 @@ Object.defineProperties(ModelBinding.prototype, {
     get(){
       const value = this.model[this.key];
       return this.middlewere
-        ? this.middlewere(value)
+        ? this.middlewere.execute(value, this.middlewere.properties)
         : value;
     },
     set(value){
       this.model[this.key] = this.middlewere
-        ? this.middlewere(value)
+        ? this.middlewere.execute(value, this.middlewere.properties)
         : value;
     }
   },

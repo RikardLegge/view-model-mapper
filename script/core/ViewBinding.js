@@ -3,14 +3,14 @@ class ViewBinding {
 
   constructor({template, properties}) {
     this[viewBindingData] = {};
-    this.template = template;
-    this.templateProperties = properties;
+    this[viewBindingData].template = template;
+    this[viewBindingData].templateProperties = properties;
   }
 
   replaceOldElement(element) {
     const oldElement = this.element;
     if (oldElement) {
-      this.detachElement(this);
+      this.detachElement();
       delete oldElement.boundView;
 
       const parent = oldElement.parentNode;
@@ -26,6 +26,16 @@ class ViewBinding {
       const port = ports[Math.min(index, ports.length - 1)];
       [...connectors].forEach(connector => port.appendChild(connector));
     }));
+  }
+
+  getTemplateNamespace() {
+    return this.template.getNamespace(this.templateProperties);
+  }
+
+  remove(){
+    this.template.remove
+      ? this.template.remove()
+      : this[viewBindingData].element.remove();
   }
 
   redrawElement() {
@@ -45,7 +55,7 @@ class ViewBinding {
     this[viewBindingData].ports = ports;
 
     element.boundView = this;
-    this.attachElement(this);
+    this.attachElement();
 
     this.modelChanged();
   }
@@ -57,7 +67,7 @@ class ViewBinding {
 
   viewChanged() {
     const binding = this.modelBinding;
-    binding && (binding.value = this.getValue(this));
+    binding && (binding.value = this.getValue());
   }
 
   modelChanged() {
@@ -66,8 +76,8 @@ class ViewBinding {
     const setValue = this.setValue;
 
     if (binding) {
-      setValue(this, binding.value);
-      mutator && mutator(this, binding.model)
+      setValue(binding.value);
+      mutator && mutator.execute(this, binding.model, mutator.properties);
     }
   }
 
@@ -118,7 +128,7 @@ Object.defineProperties(ViewBinding.prototype, {
       this[viewBindingData].viewMutator = value;
 
       if (this.viewMutator && this.modelBinding)
-        this.viewMutator(this, this.modelBinding.model)
+        this.viewMutator.execute(this, this.modelBinding.model, this.viewMutator.properties);
     }
   },
   modelBinding: {
@@ -144,4 +154,21 @@ Object.defineProperties(ViewBinding.prototype, {
       this[viewBindingData].eventBinding = value;
     },
   },
+
+  template: {
+    get() {
+      return this[viewBindingData].template;
+    },
+    set(value) {
+      this[viewBindingData].template = value;
+    }
+  },
+  templateProperties: {
+    get() {
+      return this[viewBindingData].templateProperties;
+    },
+    set(value) {
+      this[viewBindingData].templateProperties = value;
+    }
+  }
 });

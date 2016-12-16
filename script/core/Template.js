@@ -1,6 +1,6 @@
 class Template {
 
-  constructor(templateProperties, templateString) {
+  constructor(templateProperties={}, templateString='') {
     this.templateProperties = templateProperties;
     this.templateString = templateString;
   }
@@ -17,22 +17,27 @@ class Template {
     return {element, ports};
   }
 
-  precompileTemplate(templateString, namespace) {
+  getNamespace(properties){
+    const name = properties.name || '';
     const type = this.templateProperties.name
-      ? this.templateProperties.name + '__'
+      ? this.templateProperties.name
       : '';
 
+    return `${name}${type}`;
+  }
+
+  precompileTemplate(templateString, namespace) {
     return templateString
       .replace(/class=(['"])([^'"]*)\1/g,
         (_, __, all, key) => all
           .split(' ')
           .filter(cls => !!cls.trim())
-          .map(cls => `class="${namespace}${type}${cls}"`)
+          .map(cls => `class="${namespace ? `${namespace}__` : ''}${cls}"`)
           .join(' '));
   }
 
   compileTemplate(templateString, properties = {}) {
-    const namespace = properties.name || '';
+    const namespace = this.getNamespace(properties);
     return this.precompileTemplate(templateString, namespace)
       .replace(/(#\{([^}]*)})/g,
         (_, all, key) => properties[key] || '')

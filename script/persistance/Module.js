@@ -15,6 +15,14 @@ class Module {
     this.views = views;
   }
 
+  unload() {
+    this.views.getList().forEach(view=>view.remove());
+
+    this.header = {};
+    this.models = null;
+    this.views = null;
+  }
+
   addView(view) {
     const id = ++this.header.idCounter;
     const viewDescriptor = {id, view};

@@ -1,17 +1,18 @@
 class EventBinding {
 
-  constructor(model, signal, signalHandler) {
-    Object.assign(this, {model, signal, signalHandler});
+  constructor(model, signalHandler) {
+    this.model = model;
+    this.signalHandler = signalHandler;
   }
 
   trigger() {
-    this.signalHandler(this.signal, this.model);
+    this.signalHandler.execute(this.model, this.signalHandler.properties);
   }
 
 }
 
 Object.defineProperties(EventBinding.prototype, {
   path: {
-    get(){ return [...this.model.path, this.signal]; }
+    get(){ return this.signalHandler.execute.__path;}
   }
 });

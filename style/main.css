@@ -4,6 +4,52 @@ html, body {
   margin: 0;
   padding: 0; }
 
+.expandableMenuGroup__container {
+  height: 400px;
+  background: red;
+  padding: 5px; }
+
+.expandableMenuGroup__content {
+  height: 100%;
+  display: flex;
+  flex-direction: column; }
+
+.expandableMenuHeaderGroup__container {
+  height: 50px;
+  background: blue; }
+
+.expandableMenuContentGroup__container {
+  flex: 1;
+  background: green; }
+
+.expandableMenuContentGroup__content {
+  height: 100%; }
+
+.expandableMenuFooterGroup__container {
+  height: 50px;
+  background: orange; }
+
+.detailsMenuButton__content {
+  display: inline-block; }
+.detailsMenuButton__input {
+  display: none; }
+.detailsMenuLabel {
+  color: blue; }
+.detailsMenuButton__container {
+  display: inline-block;
+  user-select: none; }
+.detailsMenuButton__content {
+  padding: 5px;
+  margin: 3px;
+  border: 3px solid green; }
+.detailsMenuButton__hitbox:active .detailsMenuButton__content {
+  background: green;
+  color: white; }
+.detailsMenuGroup__container {
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid gray; }
+
 .defaultButton__content {
   display: inline-block; }
 .defaultButton__input {
@@ -23,20 +69,20 @@ html, body {
   padding: 5px;
   border: 1px solid gray; }
 
-.creatorButton__content {
+.userButton__content {
   display: inline-block; }
-.creatorButton__input {
+.userButton__input {
   display: none; }
-.creatorButton__container {
+.userButton__container {
   display: inline-block;
   user-select: none; }
-.creatorButton__content {
+.userButton__content {
   padding: 10px;
   border: 2px dashed orange; }
 
-.creatorGroup__container {
+.userGroup__container {
   padding: 10px;
-  background: lightgray; }
+  background: blue; }
 
 .bindingEditorGroup__container {
   position: absolute;

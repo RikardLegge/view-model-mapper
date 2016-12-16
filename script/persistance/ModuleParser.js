@@ -15,36 +15,59 @@ class ModuleParser {
   }
 
   parseModelBindings(obj, models, views) {
-    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middlewere: middlewereDef}) => {
+    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middlewere: middlewereDef={}}) => {
       const model = models.findById(modelId);
       const view = views.findById(viewId);
 
-      const middlewere = middlewereDef && this.reducePath(Functions, middlewereDef.path);
+      let middlewere;
+      if(middlewereDef.path){
+        middlewere = {
+          execute: this.reducePath(Functions, middlewereDef.path),
+          properties: middlewereDef.properties
+        }
+      }
+
       const modelBinding = new ModelBinding();
       modelBinding.properties = {model, middlewere, key: modelPath};
+
+      assert(view, `No view found when parsing model bindings`);
+      model || console.warn(`Model "${modelId}" not connected using view/model binding`, view, modelPath);
 
       view.modelBinding = modelBinding;
     });
   }
 
   parseEventBindings(obj, models, views) {
-    obj.forEach(({view:{id: viewId}, model:{id: modelId}, signal, signalHandler: signalHandlerDef}) => {
+    obj.forEach(({view:{id: viewId}, model:{id: modelId}, signalHandler: signalHandlerDef, }) => {
       const model = models.findById(modelId);
       const view = views.findById(viewId);
 
-      const signalHandler = signalHandlerDef && this.reducePath(Functions, signalHandlerDef.path);
-      const eventBinding = new EventBinding(model, signal, signalHandler);
+      let signalHandler;
+      if(signalHandlerDef){
+        signalHandler = {
+          execute: this.reducePath(Functions, signalHandlerDef.path),
+          properties: signalHandlerDef.properties
+        }
+      }
+
+      const eventBinding = new EventBinding(model, signalHandler);
+
+      assert(view, `No view found when parsing event bindings`);
+      signalHandler || console.warn(`Signal handler not connected to view`, view, signalHandlerDef);
+      model || console.warn(`Model "${modelId}" not connected to view`, view);
 
       view.eventBinding = eventBinding;
     });
   }
 
   parseViewMutators(obj, views) {
-    obj.forEach(({view:{id:viewId}, mutator:{path}}) => {
+    obj.forEach(({view:{id:viewId}, mutator:{path, properties={}}}) => {
       const viewMutator = this.reducePath(Functions, path);
       const view = views.findById(viewId);
 
-      view.viewMutator = viewMutator;
+      assert(view, `No view found when parsing view mutators`);
+
+      view.viewMutator = {execute: viewMutator, properties};
     });
   }
 
@@ -56,11 +79,19 @@ class ModuleParser {
     unresolvedAliases.forEach(({model, alias:{key, value:{type, id}}}) => {
       switch (type) {
         case 'model':
-          model.addValueProperty(key, models.findById(id));
+          const childModel = models.findById(id);
+          assert(childModel, `No model found when resolving aliases [${id}]`);
+          model.addValueProperty(key, childModel);
           break;
 
         case 'view':
-          model.addValueProperty(key, views.findById(id));
+          const view = views.findById(id);
+          assert(view, `No view found when resolving aliases [${id}]`);
+          model.addValueProperty(key, view);
+          break;
+
+        default:
+          console.warn(`No alias resolver available for "${type}". key = "${key}"`);
           break;
       }
     });
@@ -73,8 +104,8 @@ class ModuleParser {
     obj.forEach(({id, name: tag, properties, aliases = [], middleware = []}) => {
       const model = new Model(properties);
 
-      middleware.forEach(({key, middleware:{path}}) => {
-        const method = this.reducePath(Functions, path);
+      middleware.forEach(({key, middleware:{path, properties}}) => {
+        const method = {execute: this.reducePath(Functions, path), properties};
         model.addMiddleware(key, method);
       });
 
@@ -107,6 +138,7 @@ class ModuleParser {
     });
 
     unattachedViews.forEach(({view, id, port}) => {
+      assert(views[id].view, `No view found when attaching view to parent ${id}`, view, port);
       view.parentView = {view: views[id].view, port};
     });
 

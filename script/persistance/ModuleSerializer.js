@@ -16,11 +16,12 @@ class ModuleSerializer {
     return views.getList()
       .filter(view => !!view.viewMutator)
       .map(view => {
-        const id = views.getMeta(view).id;
+        const {id} = views.getMeta(view);
         const mutator = view.viewMutator;
-        const path = mutator.__path;
+        const properties = mutator.properties;
+        const path = mutator.execute.__path;
 
-        return {view: {id}, mutator: {path}};
+        return {view: {id}, mutator: {path, properties}};
       });
   }
 
@@ -32,12 +33,17 @@ class ModuleSerializer {
         const model = modelBinding.model;
         const middlewereInstance = modelBinding.middlewere;
 
-        const viewId = views.getMeta(view).id;
-        const modelId = models.getMeta(model).id;
+        const {id: viewId} = views.getMeta(view);
+        const {id: modelId} = models.getMeta(model);
         const path = modelBinding.key;
-        const middlewere = middlewereInstance && middlewereInstance.__path
-          ? {path: middlewereInstance.__path}
-          : undefined;
+
+        let middlewere;
+        if(middlewereInstance){
+          middlewere = {
+            path: middlewereInstance.execute.__path,
+            properties: middlewereInstance.properties
+          }
+        }
 
         return {view: {id: viewId}, model: {id: modelId, path}, middlewere};
       });
@@ -51,14 +57,18 @@ class ModuleSerializer {
         const model = eventBinding.model;
         const signalHandlerInstance = eventBinding.signalHandler;
 
-        const viewId = views.getMeta(view).id;
-        const modelId = models.getMeta(model).id;
-        const signal = eventBinding.signal;
-        const signalHandler = signalHandlerInstance && signalHandlerInstance.__path
-          ? {path: signalHandlerInstance.__path}
-          : undefined;
+        const {id: viewId} = views.getMeta(view);
+        const {id: modelId} = models.getMeta(model);
 
-        return {view: {id: viewId}, model: {id: modelId}, signal, signalHandler};
+        let signalHandler;
+        if(signalHandlerInstance){
+          signalHandler = {
+            path: signalHandlerInstance.execute.__path,
+            properties: signalHandlerInstance.properties
+          }
+        }
+
+        return {view: {id: viewId}, model: {id: modelId}, signalHandler};
       });
   }
 
@@ -73,7 +83,7 @@ class ModuleSerializer {
         const {id, tag: name} = models.getMeta(model);
         const aliases = [];
         const middleware = Object.entries(model.middleware).reduce((middleware, [key, values]) => {
-          middleware.push(...values.map(value => ({key, middleware: {path: value.__path}})));
+          middleware.push(...values.map(value => ({key, middleware: {path: value.execute.__path, properties: value.properties}})));
           return middleware;
         }, []);
         const properties = Object.entries(model).reduce((properties, [key, value]) => {

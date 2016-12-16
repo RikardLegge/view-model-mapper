@@ -1,46 +1,65 @@
 const applicationF = new Registry('application', Functions);
 
+let exampleState;
+let editorState;
 function main() {
-  let module;
+  const bindingEditor = new BindingEditor();
+  bindingEditor.attach();
 
-  const modulePersistor = new LocalStoragePersistor(defaultPersistedState);
+  const modulePersistor = new LocalStoragePersistor();
 
-  applicationF.register('saveState', () => modulePersistor.save());
+  applicationF.register('saveState', () => {
+    modulePersistor.save('example', exampleState);
+    modulePersistor.save('editor', editorState);
+  });
   applicationF.register('loadState', () => reload());
-  applicationF.register('clearState', () => modulePersistor.clean());
-  applicationF.register('addView', (signal, {type, parentId, modelId, modelKey, name = 'default'}) => {
-    const parentView = module.views.findById(parseInt(parentId));
+  applicationF.register('clearState', () => {
+    modulePersistor.clean('example');
+    modulePersistor.clean('editor');
+  });
+  applicationF.register('addView', ({type, parentId, modelId, modelKey, name = 'default'}) => {
+    const parentView = exampleState.views.findById(parseInt(parentId));
+    const model = exampleState.models.findById(parseInt(modelId));
+
+    if(!parentView)
+      return console.error(`A valid parent view must be provided when adding views`);
+
+    if(!model)
+      return console.error(`A valid model must be provided when adding views`);
+
     const view = UI.default[type].create({parentView, properties: {name}});
 
-    if (type !== 'group') {
-      const model = module.models.findById(parseInt(modelId));
-      const key = modelKey;
-      const binding = new ModelBinding();
-      binding.properties = {model, key};
-      view.modelBinding = binding;
-    }
+    const key = modelKey;
+    const binding = new ModelBinding();
+    binding.properties = {model, key};
+    view.modelBinding = binding;
 
-    module.addView(view);
+    exampleState.addView(view);
   });
-  applicationF.register('removeView', (signal, model) => {
+  applicationF.register('removeView', (model) => {
     const target = model.target;
     if (target) {
-      const view = module.views.getMeta(target);
+      const view = exampleState.views.getMeta(target);
       target.element.remove();
-      module.views.remove(view);
+      exampleState.views.remove(view);
       model.target = null;
     }
   });
   reload();
 
   function reload() {
-    module = modulePersistor.load();
+    editorState && editorState.unload();
+    editorState = modulePersistor.load('editor', defaultEditorState);
 
-    const applicationModel = module.models.findByTag('application');
+    exampleState && exampleState.unload();
+    exampleState = modulePersistor.load('example', defaultExamplePersistedState);
+
+    const applicationModel = exampleState.models.findByTag('application');
     // enableTicker(applicationModel, 'frameCount');
     enableLogger(applicationModel, ['frameCount']);
 
-    bindingEditor(module);
+    const editorModel = editorState.models.findByTag('editor');
+    bindingEditor.setModule(editorModel, [editorState, exampleState]);
 
     function enableTicker(model, property) {
       requestAnimationFrame(function next() {

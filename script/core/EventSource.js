@@ -36,9 +36,8 @@ class EventSource {
     }
     this[callStack].push(key);
 
-    this[triggers]
-      .filter(({glob}) => checkGlob(glob, key))
-      .forEach(({onChange}) => onChange(key, value, this));
+    const callbacksToTrigger = this[triggers].filter(({glob}) => checkGlob(glob, key));
+    callbacksToTrigger.forEach(({onChange}) => onChange(key, value, this));
 
     if (this[allowEventBubbling]) {
       const {model: parent, key: parentKey} = this.parent;

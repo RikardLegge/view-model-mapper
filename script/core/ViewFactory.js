@@ -1,7 +1,7 @@
-const defaultViewDefinition = new ViewBindingDefinition();
+const defaultViewBindingDefinition = new ViewBindingDefinition();
 class ViewFactory {
 
-  constructor(template, viewDefinition = defaultViewDefinition) {
+  constructor(template, viewDefinition = defaultViewBindingDefinition) {
     this.template = template;
     this.viewDefinition = viewDefinition;
   }
@@ -10,6 +10,7 @@ class ViewFactory {
     const properties = options.properties;
     const template = this.template;
     const view = this.viewDefinition.construct({properties, template});
+
     view.__path = this.__path;
 
     view.parentView = {view: options.parentView};
