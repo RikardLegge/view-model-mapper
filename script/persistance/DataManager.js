@@ -1,7 +1,13 @@
 class DataManager {
   constructor(data, metaKey) {
-    this.data = data;
+    this.data = [];
     this.metaKey = metaKey;
+
+    data.forEach(it=>this.add(it));
+  }
+
+  add(value){
+    this.data.push(value);
   }
 
   getList() {
@@ -22,6 +28,13 @@ class DataManager {
     }
   }
 
+  groupByTag(){
+    return this.data.reduce((group, valueMeta) => {
+      group[valueMeta.tag] = valueMeta[this.metaKey];
+      return group;
+    }, {});
+  }
+
   findByTag(tag) {
     return this.find(it => it.tag === tag);
   }
@@ -30,7 +43,4 @@ class DataManager {
     return this.find(it => it.id === id);
   }
 
-  getMeta(target) {
-    return this.data.find(data => data[this.metaKey] === target);
-  }
 }

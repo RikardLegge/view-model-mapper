@@ -1,9 +1,9 @@
 class BindingEditorStyler {
-  apply(view) {
-    view.element.style = 'box-shadow: inset 0 0 0 2px orange, 0 0 0 2px red';
+  addStyle(view, {color='orange'}={}) {
+    view.element.style = `box-shadow: inset 0 0 0 2px ${color}, 0 0 0 2px red`;
   }
 
-  unApply(view) {
+  removeStyle(view) {
     view.element.style = '';
   }
 }
@@ -26,7 +26,14 @@ class BindingEditor {
       editor.setEditorModel(this.editorModel);
     });
 
-    editorModel.listen('target', ()=>this.propagateTargetChange());
+    editorModel.listen('target', ()=>{
+      this.applyTargetStyle(editorModel.target);
+      this.propagateTargetChange();
+    });
+
+    editorModel.listen('moveTarget', ()=>{
+      this.applyTargetStyle(editorModel.moveTarget, 'green');
+    });
   }
 
   attach() {
@@ -34,30 +41,55 @@ class BindingEditor {
   }
 
   trySetTargetFromEvent(event) {
-    if (event.shiftKey) {
-      const {pageX: x, pageY: y} = event;
-      const element = document.elementFromPoint(x, y);
-      const viewBoundElement = this.findClosestViewBoundElement(element);
+    if(event.ctrlKey){
+      this.setMoveTarget(this.getElementFromMouseEvent(event));
+    } else if (event.shiftKey) {
+      this.setTarget(this.getElementFromMouseEvent(event));
+    }
+  }
 
-      this.setTarget(viewBoundElement);
+  getElementFromMouseEvent(event){
+    const {pageX: x, pageY: y} = event;
+    const element = document.elementFromPoint(x, y);
+    return this.findClosestViewBoundElement(element);
+  }
+
+  setMoveTarget(element){
+    const editorModel = this.editorModel;
+    const target = editorModel.moveTarget;
+
+    this.unApplyTargetStyle(element, target);
+
+    editorModel.moveTarget = (element && element !== document.body)
+      ? element.boundView
+      : null;
+  }
+
+  unApplyTargetStyle(element, target) {
+    if (target) {
+      const targetElement = target.element;
+      if (element === targetElement) {
+        return;
+      }
+      this.style.removeStyle(target);
+    }
+  }
+
+  applyTargetStyle(target, color){
+    if(target){
+      this.style.addStyle(target, {color});
     }
   }
 
   setTarget(element) {
     const editorModel = this.editorModel;
-    if (editorModel.target) {
-      const targetElement = editorModel.target.element;
-      if (element === targetElement) {
-        return;
-      }
-      this.style.unApply(this.editorModel.target);
-    }
+    const target = editorModel.target;
 
-    if (element && element !== document.body) {
-      editorModel.target = element.boundView;
-    } else {
-      editorModel.target = null;
-    }
+    this.unApplyTargetStyle(element, target);
+
+    editorModel.target = (element && element !== document.body)
+      ? element.boundView
+      : null;
   }
 
   findClosestViewBoundElement(element) {
@@ -75,38 +107,34 @@ class BindingEditor {
     const target = editorModel.target;
 
     if (target) {
-      const module = this.modules.findByView(editorModel.target);
-
-      this.style.apply(target);
-
       const modelBinding = target.modelBinding;
       const eventBinding = target.eventBinding;
 
-      const viewMeta = module.views.getMeta(target);
-      const eventBindingModelMeta = eventBinding ? module.models.getMeta(eventBinding.model) : {};
+      const viewMeta = target.meta;
+      const eventBindingModelMeta = eventBinding ? eventBinding.model.meta : {};
 
       editorModel.viewProperties = `id: ` + viewMeta.id;
       editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
-      editorModel.modelText = modelBinding ? getModelPathName(module, modelBinding) : null;
+      editorModel.modelText = modelBinding ? getModelPathName(modelBinding) : null;
       editorModel.eventModelIdText = eventBindingModelMeta.tag || null;
       editorModel.templateText = target.templateProperties.name;
     } else {
+      editorModel.suggestions = [];
+      editorModel.viewProperties = null;
       editorModel.eventText = null;
       editorModel.modelText = null;
-      editorModel.templateText = null;
       editorModel.eventModelIdText = null;
+      editorModel.templateText = null;
     }
 
-    function getModelPathName(module, binding) {
-      const {tag: tagName} = module.models.getMeta(binding.model);
+    function getModelPathName(binding) {
+      const {tag: tagName} = binding.model.meta;
       const property = binding.path[binding.path.length - 1];
 
       return `${tagName}.${property}`;
     }
   }
 }
-
-
 
 class ViewBindingEditor {
 
@@ -129,7 +157,7 @@ class ViewBindingEditor {
     if (target && target.templateProperties.name !== editorModel.templateText) {
       target.templateProperties.name = editorModel.templateText;
       target.redrawElement();
-      this.style.apply(target);
+      this.style.addStyle(target);
     }
   }
 }
@@ -209,7 +237,7 @@ class EventBindingEditor {
       const binding = target.eventBinding;
       const currentModule = binding.model;
       const module = this.modules.findByModel(currentModule);
-      const models = module.models.models.reduce((models, model)=>(models[model.tag] = model, models), {});
+      const models = module.models.groupByTag();
       const tag = editorModel.eventModelIdText;
 
       const suggestions = getSuggestions(models, [tag]);
@@ -219,13 +247,14 @@ class EventBindingEditor {
         : null;
 
       if (suggestion && suggestion.path.length === 1) {
-        const currentModuleMeta = module.models.getMeta(currentModule);
+        const currentModuleMeta = currentModule.meta;
         const oldModelId = currentModuleMeta.id;
         const oldTag = currentModuleMeta.tag;
 
-        const newModel = suggestion.value.model;
-        const modelId = suggestion.value.id;
-        const tag = suggestion.value.tag;
+        const newModelMeta = suggestion.value.meta;
+        const newModel = newModelMeta.model;
+        const modelId = newModelMeta.id;
+        const tag = newModelMeta.tag;
 
         if (oldModelId == modelId) {
           return;
@@ -309,12 +338,11 @@ class ModelBindingEditor {
       : null;
 
     if (suggestion && suggestion.path.length >= 2) {
-      const module = this.getModule();
       const keyedModels = this.getKeyedModels();
       const binding = editorModel.target.modelBinding;
 
       const fullPath = suggestion.path.join('.');
-      const previousFullPath = module.models.getMeta(binding.model).tag + `.` + binding.path.pop();
+      const previousFullPath = binding.model.meta.tag + `.` + binding.path.pop();
 
       const key = suggestion.path.pop();
       const model = reduceObject(keyedModels, suggestion.path);
@@ -354,7 +382,10 @@ class ModelBindingEditor {
     return this.modules.findByView(editorModel.target);
   }
 
-  getKeyedModels(){
-    return this.modules.getKeyedModels(this.getModule());
+  getKeyedModels() {
+    const module = this.getModule();
+    return module
+      ? module.models.groupByTag()
+      : {};
   }
 }

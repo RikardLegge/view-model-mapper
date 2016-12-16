@@ -123,13 +123,7 @@ const rawTemplate = {
 
     assert(element, `No element found for the selector "${selector}"`);
 
-    let ports = element.querySelectorAll('[data-port]');
-
-    if(ports.length === 0){
-      ports = [element];
-    }
-
-    return {element, ports};
+    return {element, ports: [element]};
   },
 
   remove() { }

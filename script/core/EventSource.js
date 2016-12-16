@@ -55,9 +55,5 @@ function checkGlob(glob, key) {
     return true;
   }
 
-  if (key === glob) {
-    return true;
-  }
-
-  return false;
+  return key === glob;
 }

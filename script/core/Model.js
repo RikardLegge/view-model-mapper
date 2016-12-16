@@ -1,12 +1,13 @@
-const parentDescriptor = Symbol(`parentDescriptor`);
+const modelData = Symbol(`modelData`);
+const applyMiddleware = Symbol(`applyMiddleware`);
 const autoSetPath = Symbol(`autoSetPath`);
 const unSetPath = Symbol(`unSetPath`);
-const applyMiddleware = Symbol(`applyMiddleware`);
 
 class Model extends EventSource {
 
   constructor(object) {
     super();
+    this[modelData] = {};
     this.ignoreEqualSet = true;
     this.middleware = {};
     this.attachProperties(object);
@@ -107,21 +108,35 @@ class Model extends EventSource {
 
 }
 Object.defineProperties(Model.prototype, {
+  meta: {
+    get() {
+      return this[modelData].meta;
+    },
+    set(value) {
+      if(!this[modelData].meta) {
+        this[modelData].meta = value;
+      } else {
+        console.warn(`Meta is only allowed to be set once`, this, value);
+      }
+    }
+  },
   parent: {
     get(){
-      return this[parentDescriptor]
-        ? {model: this[parentDescriptor].model, key: this[parentDescriptor].key}
+      const parentDescriptor = this[modelData].parentDescriptor;
+      return parentDescriptor
+        ? {model: parentDescriptor.model, key: parentDescriptor.key}
         : {};
     }
   },
   path: {
     get(){
-      return this[parentDescriptor]
-        ? [...this[parentDescriptor].model.path, this[parentDescriptor].key]
+      const parentDescriptor = this[modelData].parentDescriptor;
+      return parentDescriptor
+        ? [...parentDescriptor.model.path, parentDescriptor.key]
         : [];
     },
     set(path){
-      this[parentDescriptor] = path || {};
+      this[modelData].parentDescriptor = path || {};
     }
   }
 });

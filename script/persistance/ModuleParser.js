@@ -1,11 +1,11 @@
 class ModuleParser {
 
-  parse(obj) {
+  parse(obj, modules) {
     const header = this.parseHeader(obj.header);
     const {models, unresolvedModelAliases} = this.parseModels(obj.models);
     const views = this.parseViews(obj.views, models);
 
-    this.resolveModelAliases(unresolvedModelAliases, models, views);
+    this.resolveModelAliases(unresolvedModelAliases, models, views, modules);
 
     this.parseModelBindings(obj.modelBindings, models, views);
     this.parseEventBindings(obj.eventBindings, models, views);
@@ -71,12 +71,12 @@ class ModuleParser {
     });
   }
 
-  parseHeader(obj) {
-    return {idCounter: obj.idCounter};
+  parseHeader(header) {
+    return header;
   }
 
-  resolveModelAliases(unresolvedAliases, models, views) {
-    unresolvedAliases.forEach(({model, alias:{key, value:{type, id}}}) => {
+  resolveModelAliases(unresolvedAliases, models, views, modules) {
+    unresolvedAliases.forEach(({model, alias:{key, value:{type, id, moduleId}}}) => {
       switch (type) {
         case 'model':
           const childModel = models.findById(id);
@@ -85,7 +85,15 @@ class ModuleParser {
           break;
 
         case 'view':
-          const view = views.findById(id);
+          let view;
+          if(moduleId) {
+            const module = modules.find(module=>module.header.id === moduleId);
+            assert(module, `No module found ${moduleId}`);
+            view = module.views.findById(id);
+          } else {
+            view = views.findById(id);
+          }
+
           assert(view, `No view found when resolving aliases [${id}]`);
           model.addValueProperty(key, view);
           break;
@@ -109,7 +117,10 @@ class ModuleParser {
         model.addMiddleware(key, method);
       });
 
-      modelsSet[id] = {id, tag, model};
+      const meta = {id, tag, model};
+      model.meta = meta;
+
+      modelsSet[id] = meta;
       unresolvedModelAliases.push(...aliases.map(alias => ({model, alias})));
     });
 
@@ -131,7 +142,10 @@ class ModuleParser {
       const viewFactory = this.reducePath(UI, path);
       const view = viewFactory.create({properties});
 
-      views[id] = {id, view};
+      const meta = {id, view};
+      view.meta = meta;
+
+      views[id] = meta;
 
       if (parentViewDef)
         unattachedViews.push({view, id: parentViewDef.id, port: parentViewDef.port});
@@ -146,7 +160,7 @@ class ModuleParser {
   }
 
   reducePath(obj, path) {
-    const leaf = path.reduce((obj, path) => obj[path], obj);
+    const leaf = path.reduce((obj, path) => obj && obj[path], obj);
 
     console.assert(leaf, `Unable to expand path to a value for`, path, obj);
 

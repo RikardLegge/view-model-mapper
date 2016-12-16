@@ -8,11 +8,19 @@ class Module {
     this.views = null;
   }
 
-  load(obj) {
-    const {header, models, views} = this.stateParser.parse(obj);
+  load(obj, modules) {
+    const {header, models, views} = this.stateParser.parse(obj, modules);
     this.header = header;
     this.models = models;
     this.views = views;
+  }
+
+  detachView(view){
+    this.views.remove(view.meta);
+  }
+
+  attachView(view){
+    this.views.add(view.meta);
   }
 
   unload() {
@@ -23,14 +31,22 @@ class Module {
     this.views = null;
   }
 
-  addView(view) {
+  registerNewView(view) {
     const id = ++this.header.idCounter;
     const viewDescriptor = {id, view};
-    this.views.views.push(viewDescriptor);
+    view.meta = viewDescriptor;
+    this.views.add(viewDescriptor);
   }
 
-  serialize() {
-    return this.stateSerializer.serialize(this);
+  registerNewModel(model, tag) {
+    const id = ++this.header.idCounter;
+    const viewDescriptor = {id, tag, model};
+    model.meta = viewDescriptor;
+    this.models.add(viewDescriptor);
+  }
+
+  serialize(modules) {
+    return this.stateSerializer.serialize(this, modules);
   }
 
 }

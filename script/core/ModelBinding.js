@@ -14,6 +14,10 @@ class ModelBinding {
     this[modelBindingData].onChange && this[modelBindingData].onChange();
   }
 
+  dispose(){
+    this[detachListeners]();
+  }
+
   [attachListeners]() {
     if (this.model && this.key)
       this.model.listen(this.key, this[boundTriggerChange]);

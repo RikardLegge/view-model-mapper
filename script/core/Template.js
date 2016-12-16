@@ -44,8 +44,25 @@ class Template {
   }
 
   findPorts(element) {
-    const self = element.hasAttribute('data-port') ? [element] : [];
-    return [...self, ...element.querySelectorAll('[data-port]')];
+    const ports = [];
+    if(element.hasAttribute('data-port')){
+      ports.push(element);
+    } else {
+      let children = [element];
+
+      while(children.length > 0) {
+        const child = children.pop();
+
+        if(child.hasAttribute('data-port')){
+          ports.push(child);
+        } else {
+          children.push(...child.children);
+        }
+      }
+
+    }
+
+    return ports;
   }
 
 }

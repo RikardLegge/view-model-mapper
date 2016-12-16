@@ -93,6 +93,18 @@ class ViewBinding {
 }
 
 Object.defineProperties(ViewBinding.prototype, {
+  meta: {
+    get() {
+      return this[viewBindingData].meta;
+    },
+    set(value) {
+      if(!this[viewBindingData].meta) {
+        this[viewBindingData].meta = value;
+      } else {
+        console.warn(`Meta is only allowed to be set once`, this, value);
+      }
+    }
+  },
   parentView: {
     get(){
       let currentElement = this.element;
@@ -147,7 +159,10 @@ Object.defineProperties(ViewBinding.prototype, {
       }
 
       this[viewBindingData].modelBinding = value;
-      this[viewBindingData].modelBinding.listen = () => this.modelChanged();
+
+      if(this[viewBindingData].modelBinding) {
+        this[viewBindingData].modelBinding.listen = () => this.modelChanged();
+      }
 
       this.modelChanged();
     }

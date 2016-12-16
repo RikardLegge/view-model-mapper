@@ -2,12 +2,12 @@ class LocalStoragePersistor {
 
   constructor() { }
 
-  save(key, module) {
-    const json = JSON.stringify(module.serialize());
+  save(key, module, modules) {
+    const json = JSON.stringify(module.serialize(modules));
     localStorage.setItem(key, json);
   }
 
-  load(key, defaultModule) {
+  load(key, modules, defaultModule) {
     const module = new Module();
 
     const storedState = localStorage.getItem(key);
@@ -15,7 +15,7 @@ class LocalStoragePersistor {
       ? JSON.parse(storedState)
       : defaultModule;
 
-    module.load(persistedState);
+    module.load(persistedState, modules);
 
     return module;
   }

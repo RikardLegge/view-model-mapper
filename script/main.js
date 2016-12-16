@@ -10,13 +10,37 @@ function main() {
   const modulePersistor = new LocalStoragePersistor();
 
   applicationF.register('saveState', () => {
-    modulePersistor.save('example', exampleState);
-    modulePersistor.save('editor', editorState);
+    modulePersistor.save('example', exampleState, modules);
+    modulePersistor.save('editor', editorState, modules);
   });
   applicationF.register('loadState', () => reload());
   applicationF.register('clearState', () => {
     modulePersistor.clean('example');
     modulePersistor.clean('editor');
+  });
+  applicationF.register('moveTarget', ({target:view, moveTarget:parent})=>{
+    const viewModule = modules.findByView(view);
+    const parentModule = modules.findByView(parent);
+
+    if(parent.ports.length === 0){
+      console.log(`Move target must have ports`);
+      return;
+    }
+
+    if(viewModule !== parentModule){
+      console.log('Moving views between modules will reset it"s model binding');
+
+      view.eventBinding && view.eventBinding.dispose();
+      view.modelBinding && view.modelBinding.dispose();
+
+      view.eventBinding = null;
+      view.modelBinding = null;
+
+      viewModule.detachView(view);
+      parentModule.attachView(view);
+    }
+
+    view.parentView = {view: parent, port: 0};
   });
   applicationF.register('addView', ({type, parentId, modelId, modelKey, name = 'default'}) => {
     const parentView = exampleState.views.findById(parseInt(parentId));
@@ -35,18 +59,17 @@ function main() {
     binding.properties = {model, key};
     view.modelBinding = binding;
 
-    exampleState.addView(view);
+    exampleState.registerNewView(view);
   });
   applicationF.register('removeView', (model) => {
     const target = model.target;
     if (target) {
       const module = modules.findByView(target);
-      const viewMeta = module.views.getMeta(target);
 
       const childViews = target.remove();
-      childViews.forEach(child=>module.views.remove(module.views.getMeta(child)));
+      childViews.forEach(child=>module.views.remove(child));
 
-      module.views.remove(viewMeta);
+      module.detachView(target);
 
       model.target = null;
     }
@@ -54,13 +77,15 @@ function main() {
   reload();
 
   function reload() {
-    editorState && editorState.unload();
-    editorState = modulePersistor.load('editor', defaultEditorState);
+    const moduleList = modules.modules = [];
 
     exampleState && exampleState.unload();
-    exampleState = modulePersistor.load('example', defaultExamplePersistedState);
+    exampleState = modulePersistor.load('example', moduleList, defaultExamplePersistedState);
+    moduleList.push(exampleState);
 
-    modules.modules = [exampleState, editorState];
+    editorState && editorState.unload();
+    editorState = modulePersistor.load('editor', moduleList, defaultEditorState);
+    moduleList.push(editorState);
 
     const applicationModel = exampleState.models.findByTag('application');
     // enableTicker(applicationModel, 'frameCount');
@@ -84,25 +109,7 @@ function main() {
   }
 }
 
-class ModuleCollection {
-  constructor(modules=[]){
-    this.modules = modules;
-  }
 
-  findByView(view){
-    return this.modules.find(module=>module.views.getList().indexOf(view) !== -1);
-  }
-
-  findByModel(model){
-    return this.modules.find(module=>module.models.getList().indexOf(model) !== -1);
-  }
-
-  getKeyedModels(module){
-    return module
-      ? module.models.models.reduce((models, model) => (models[model.tag] = model.model, models), {})
-      : {};
-  }
-}
 
 main();
 
