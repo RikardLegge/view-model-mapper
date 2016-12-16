@@ -9,9 +9,11 @@ function main() {
 
   const modulePersistor = new LocalStoragePersistor();
 
-  applicationF.register('saveState', () => {
+  applicationF.register('saveState', (model) => {
     modulePersistor.save('example', exampleState, modules);
     modulePersistor.save('editor', editorState, modules);
+
+    model.lastSaved = Date.now();
   });
   applicationF.register('loadState', () => reload());
   applicationF.register('clearState', () => {

@@ -8,6 +8,7 @@ const defaultEditorState = {
       id: 3,
       name: 'editor',
       properties: {
+        lastSaved: 0,
         viewProperties: '',
         eventModelIdText: '',
         templateText: '',
@@ -30,6 +31,7 @@ const defaultEditorState = {
         load: 'Load',
         clear: 'Clear',
         move: 'Move',
+        lastSaved: 'Last Save: ',
         create: 'Create view',
         delete: 'Delete'
       }
@@ -81,6 +83,10 @@ const defaultEditorState = {
 
     {id: 51, index: 5, path: ['default', 'button'], parentView: {id: 14, port: 0}},
     {id: 52, index: 0, path: ['default', 'label'], parentView: {id: 51, port: 0}},
+
+    {id: 53, index: 3, path: ['default', 'group'], parentView: {id: 11, port: 0}},
+    {id: 54, index: 0, path: ['default', 'label'], parentView: {id: 53, port: 0}},
+    {id: 55, index: 1, path: ['default', 'label'], parentView: {id: 53, port: 0}},
   ],
 
   viewMutators: [
@@ -113,6 +119,9 @@ const defaultEditorState = {
     {view: {id: 49}, model: {id: 3, path: 'templateText'}},
 
     {view: {id: 28}, model: {id: 3, path: 'target'}},
+
+    {view: {id: 54}, model: {id: 4, path: 'lastSaved'}},
+    {view: {id: 55}, model: {id: 3, path: 'lastSaved'}},
   ],
 
   eventBindings: [
