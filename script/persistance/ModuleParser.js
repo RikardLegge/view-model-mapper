@@ -15,20 +15,20 @@ class ModuleParser {
   }
 
   parseModelBindings(obj, models, views) {
-    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middlewere: middlewereDef={}}) => {
+    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middleware: middlewareDef={}}) => {
       const model = models.findById(modelId);
       const view = views.findById(viewId);
 
-      let middlewere;
-      if(middlewereDef.path){
-        middlewere = {
-          execute: this.reducePath(Functions, middlewereDef.path),
-          properties: middlewereDef.properties
+      let middleware;
+      if(middlewareDef.path){
+        middleware = {
+          execute: this.reducePath(Functions, middlewareDef.path),
+          properties: middlewareDef.properties
         }
       }
 
       const modelBinding = new ModelBinding();
-      modelBinding.properties = {model, middlewere, key: modelPath};
+      modelBinding.properties = {model, middleware, key: modelPath};
 
       assert(view, `No view found when parsing model bindings`);
       model || console.warn(`Model "${modelId}" not connected using view/model binding`, view, modelPath);

@@ -3,6 +3,7 @@ const applicationF = new Registry('application', Functions);
 let exampleState;
 let editorState;
 function main() {
+  const modules = new ModuleCollection();
   const bindingEditor = new BindingEditor();
   bindingEditor.attach();
 
@@ -39,9 +40,14 @@ function main() {
   applicationF.register('removeView', (model) => {
     const target = model.target;
     if (target) {
-      const view = exampleState.views.getMeta(target);
-      target.element.remove();
-      exampleState.views.remove(view);
+      const module = modules.findByView(target);
+      const viewMeta = module.views.getMeta(target);
+
+      const childViews = target.remove();
+      childViews.forEach(child=>module.views.remove(module.views.getMeta(child)));
+
+      module.views.remove(viewMeta);
+
       model.target = null;
     }
   });
@@ -54,12 +60,14 @@ function main() {
     exampleState && exampleState.unload();
     exampleState = modulePersistor.load('example', defaultExamplePersistedState);
 
+    modules.modules = [exampleState, editorState];
+
     const applicationModel = exampleState.models.findByTag('application');
     // enableTicker(applicationModel, 'frameCount');
     enableLogger(applicationModel, ['frameCount']);
 
     const editorModel = editorState.models.findByTag('editor');
-    bindingEditor.setModule(editorModel, [editorState, exampleState]);
+    bindingEditor.setModule(editorModel, modules);
 
     function enableTicker(model, property) {
       requestAnimationFrame(function next() {
@@ -73,6 +81,26 @@ function main() {
       data.listen('*', (key, value, state) => ignore.indexOf(key) === -1 &&
       (state.log = [...state.log, `<b>${key}</b> => ${value}`]));
     }
+  }
+}
+
+class ModuleCollection {
+  constructor(modules=[]){
+    this.modules = modules;
+  }
+
+  findByView(view){
+    return this.modules.find(module=>module.views.getList().indexOf(view) !== -1);
+  }
+
+  findByModel(model){
+    return this.modules.find(module=>module.models.getList().indexOf(model) !== -1);
+  }
+
+  getKeyedModels(module){
+    return module
+      ? module.models.models.reduce((models, model) => (models[model.tag] = model.model, models), {})
+      : {};
   }
 }
 

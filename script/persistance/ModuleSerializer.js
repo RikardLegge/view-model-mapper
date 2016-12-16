@@ -31,21 +31,21 @@ class ModuleSerializer {
       .map(view => {
         const modelBinding = view.modelBinding;
         const model = modelBinding.model;
-        const middlewereInstance = modelBinding.middlewere;
+        const middlewareInstance = modelBinding.middleware;
 
         const {id: viewId} = views.getMeta(view);
         const {id: modelId} = models.getMeta(model);
         const path = modelBinding.key;
 
-        let middlewere;
-        if(middlewereInstance){
-          middlewere = {
-            path: middlewereInstance.execute.__path,
-            properties: middlewereInstance.properties
+        let middleware;
+        if(middlewareInstance){
+          middleware = {
+            path: middlewareInstance.execute.__path,
+            properties: middlewareInstance.properties
           }
         }
 
-        return {view: {id: viewId}, model: {id: modelId, path}, middlewere};
+        return {view: {id: viewId}, model: {id: modelId, path}, middleware};
       });
   }
 
@@ -91,7 +91,13 @@ class ModuleSerializer {
             if (value instanceof Model) {
               aliases.push({key, value: {type: 'model', id: models.getMeta(value).id}});
             } else if (value instanceof ViewBinding) {
-              aliases.push({key, value: {type: 'view', id: views.getMeta(value).id}});
+              const meta = views.getMeta(value);
+              if(meta) {
+                aliases.push({key, value: {type: 'view', id: meta.id}});
+              } else {
+                properties[key] = null;
+                console.warn(`Unable to find view. Selecting between modules is currently not supported`, value, views)
+              }
             } else if (value && (typeof value === 'object') && value.constructor === Object) {
               console.error(`Value not serializable`, value);
             } else {

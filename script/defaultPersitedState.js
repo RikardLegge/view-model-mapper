@@ -87,9 +87,9 @@ const defaultEditorState = {
     {view: {id: 35}, model: {id: 4, path: 'load'}},
     {view: {id: 37}, model: {id: 4, path: 'clear'}},
     {view: {id: 47}, model: {id: 4, path: 'delete'}},
-    {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middlewere: {path: ['helloworld', 'wrapLines']}},
-    {view: {id: 30}, model: {id: 3, path: 'modelText'}, middlewere: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[ModelBinding UNAVAILABLE]'}}},
-    {view: {id: 31}, model: {id: 3, path: 'eventText'}, middlewere: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventBinding UNAVAILABLE]'}}},
+    {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middleware: {path: ['helloworld', 'wrapLines']}},
+    {view: {id: 30}, model: {id: 3, path: 'modelText'}, middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[ModelBinding UNAVAILABLE]'}}},
+    {view: {id: 31}, model: {id: 3, path: 'eventText'}, middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventBinding UNAVAILABLE]'}}},
     {view: {id: 48}, model: {id: 3, path: 'templateText'}},
 
     {view: {id: 40}, model: {id: 5, path: 'type'}},
@@ -100,7 +100,7 @@ const defaultEditorState = {
     {view: {id: 48}, model: {id: 3, path: 'viewProperties'}},
     {view: {id: 49}, model: {id: 3, path: 'templateText'}},
 
-    {view: {id: 50}, model: {id: 3, path: 'eventModelIdText', middlewere: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventModelID UNAVAILABLE]'}}}},
+    {view: {id: 50}, model: {id: 3, path: 'eventModelIdText', middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventModelID UNAVAILABLE]'}}}},
 
     {view: {id: 28}, model: {id: 3, path: 'target'}},
   ],
@@ -163,7 +163,7 @@ const defaultExamplePersistedState = {
   ],
 
   modelBindings: [
-    {view: {id: 12}, model: {id: 1, path: 'log'}, middlewere: {path: ['helloworld', 'wrapLines']}},
+    {view: {id: 12}, model: {id: 1, path: 'log'}, middleware: {path: ['helloworld', 'wrapLines']}},
   ],
 
   eventBindings: [

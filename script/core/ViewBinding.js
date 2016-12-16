@@ -33,9 +33,15 @@ class ViewBinding {
   }
 
   remove(){
+    const childViews = [...this.element.querySelectorAll('*')]
+      .filter(el=>!!el.boundView)
+      .map(el=>el.boundView);
+
     this.template.remove
       ? this.template.remove()
       : this[viewBindingData].element.remove();
+
+    return childViews;
   }
 
   redrawElement() {

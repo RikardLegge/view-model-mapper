@@ -18,9 +18,7 @@ class BindingEditor {
     this.modules = null;
   }
 
-  setModule(editorModel, moduleArray=[]){
-    const modules = new ModuleCollection(moduleArray);
-
+  setModule(editorModel, modules){
     this.modules = modules;
     this.editorModel = editorModel;
     this.editors.forEach(editor=>{
@@ -108,25 +106,7 @@ class BindingEditor {
   }
 }
 
-class ModuleCollection {
-  constructor(modules){
-    this.modules = modules;
-  }
 
-  findByView(view){
-    return this.modules.find(module=>module.views.getList().indexOf(view) !== -1);
-  }
-
-  findByModel(model){
-    return this.modules.find(module=>module.models.getList().indexOf(model) !== -1);
-  }
-
-  getKeyedModels(module){
-    return module
-      ? module.models.models.reduce((models, model) => (models[model.tag] = model.model, models), {})
-      : {};
-  }
-}
 
 class ViewBindingEditor {
 
@@ -244,8 +224,8 @@ class EventBindingEditor {
         const oldTag = currentModuleMeta.tag;
 
         const newModel = suggestion.value.model;
-        const modelId = suggestion.id;
-        const tag = suggestion.tag;
+        const modelId = suggestion.value.id;
+        const tag = suggestion.value.tag;
 
         if (oldModelId == modelId) {
           return;
@@ -275,7 +255,7 @@ class EventBindingEditor {
       const binding = target.eventBinding;
 
       const fullPath = suggestion.path.join('.');
-      const previousFullPath = binding.signalHandler.__path.join('.');
+      const previousFullPath = binding.signalHandler.execute.__path.join('.');
 
       const func = reduceObject(Functions, suggestion.path);
 
@@ -283,7 +263,7 @@ class EventBindingEditor {
         return;
       }
 
-      binding.signalHandler = func;
+      binding.signalHandler.execute = func;
       console.log(`Model set to ${fullPath} from ${previousFullPath}`);
       editorModel.eventText = fullPath;
     }

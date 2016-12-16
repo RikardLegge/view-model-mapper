@@ -29,13 +29,13 @@ Object.defineProperties(ModelBinding.prototype, {
   value: {
     get(){
       const value = this.model[this.key];
-      return this.middlewere
-        ? this.middlewere.execute(value, this.middlewere.properties)
+      return this.middleware
+        ? this.middleware.execute(value, this.middleware.properties)
         : value;
     },
     set(value){
-      this.model[this.key] = this.middlewere
-        ? this.middlewere.execute(value, this.middlewere.properties)
+      this.model[this.key] = this.middleware
+        ? this.middleware.execute(value, this.middleware.properties)
         : value;
     }
   },
@@ -62,10 +62,10 @@ Object.defineProperties(ModelBinding.prototype, {
       this.trigger();
     }
   },
-  middlewere: {
-    get(){return this[modelBindingData].middlewere},
+  middleware: {
+    get(){return this[modelBindingData].middleware},
     set(value){
-      this[modelBindingData].middlewere = value;
+      this[modelBindingData].middleware = value;
 
       this.trigger();
     }
