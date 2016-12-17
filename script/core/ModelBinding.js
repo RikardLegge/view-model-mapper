@@ -47,6 +47,11 @@ Object.defineProperties(ModelBinding.prototype, {
   key: {
     get(){return this[modelBindingData].key},
     set(value){
+      if(!this.model || !this.model.hasOwnProperty(value)){
+        console.log(`No the key does not exists on the model`, this.model, value);
+        return;
+      }
+
       this[detachListeners]();
 
       this[modelBindingData].key = value;
@@ -61,6 +66,12 @@ Object.defineProperties(ModelBinding.prototype, {
       this[detachListeners]();
 
       this[modelBindingData].model = value;
+
+      if(value && !value.hasOwnProperty(this.key)){
+        this.key = null;
+        console.log(`The key was reset due to it not existing on the model`, value, this.key);
+        return;
+      }
 
       this[attachListeners]();
       this.trigger();

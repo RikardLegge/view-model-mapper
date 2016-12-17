@@ -1,7 +1,7 @@
 const defaultEditorState = {
   header: {
     id: 8884463459267604,
-    idCounter: 50
+    idCounter: 100
   },
   models: [
     {
@@ -20,7 +20,7 @@ const defaultEditorState = {
         suggestions: []
       },
       derivedProperties: {
-        viewProperties: {path: ['application', ''], dependencies: ['target']}
+        viewProperties: {path: ['module', '8884463459267604', 'viewProperties'], dependencies: ['target']}
       }
     },
     {
@@ -33,7 +33,10 @@ const defaultEditorState = {
         move: 'Move',
         lastSaved: 'Last Save: ',
         create: 'Create view',
-        delete: 'Delete'
+        delete: 'Delete',
+        type: 'Type',
+        model: 'Model',
+        property: 'Property',
       }
     },
     {
@@ -41,11 +44,13 @@ const defaultEditorState = {
       name: 'viewCreator',
       properties: {
         type: 'checkbox',
-        parentId: 10,
-        modelId: 2,
+        modelTag: "editor",
         modelKey: "valid",
         name: "default",
-      }
+      },
+      aliases: [
+        {key: 'editor', value: {type:'model', id: 3}}
+      ]
     }
   ],
   views: [
@@ -53,35 +58,52 @@ const defaultEditorState = {
 
     {id: 28, index: 2, path: ['default', 'group'], parentView: {id: 11, port: 0}, properties: {name: 'bindingEditor'}},
 
-    {id: 32, index: 0, path: ['default', 'button'], parentView: {id: 28, port: 0}},
+    {id: 60, index: 3, path: ['default', 'group'], parentView: {id: 11, port: 0}},
+
+    {id: 32, index: 0, path: ['default', 'button'], parentView: {id: 60, port: 0}},
     {id: 33, index: 0, path: ['default', 'label'], parentView: {id: 32, port: 0}},
 
-    {id: 34, index: 1, path: ['default', 'button'], parentView: {id: 28, port: 0}},
+    {id: 34, index: 1, path: ['default', 'button'], parentView: {id: 60, port: 0}},
     {id: 35, index: 0, path: ['default', 'label'], parentView: {id: 34, port: 0}},
 
-    {id: 36, index: 2, path: ['default', 'button'], parentView: {id: 28, port: 0}},
+    {id: 36, index: 2, path: ['default', 'button'], parentView: {id: 60, port: 0}},
     {id: 37, index: 0, path: ['default', 'label'], parentView: {id: 36, port: 0}},
 
-    {id: 29, index: 3, path: ['default', 'label'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 29, index: 10, path: ['default', 'label'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
 
     {id: 30, index: 5, path: ['default', 'text'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
     {id: 31, index: 7, path: ['default', 'text'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
     {id: 50, index: 6, path: ['default', 'text'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 56, index: 9, path: ['default', 'text'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
 
-    {id: 48, index: 4, path: ['default', 'label'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
+    {id: 48, index: 11, path: ['default', 'label'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
     {id: 49, index: 8, path: ['default', 'text'], parentView: {id: 28, port: 0}, properties: {name: 'bindingEditor'}},
 
     {id: 14, index: 3, path: ['default', 'group'], parentView: {id: 11, port: 0}, properties: {name: ''}},
-    {id: 40, index: 0, path: ['default', 'text'], parentView: {id: 14, port: 0}, properties: {name: ''}},
-    {id: 41, index: 1, path: ['default', 'text'], parentView: {id: 14, port: 0}, properties: {name: ''}},
-    {id: 42, index: 2, path: ['default', 'text'], parentView: {id: 14, port: 0}, properties: {name: ''}},
-    {id: 43, index: 3, path: ['default', 'text'], parentView: {id: 14, port: 0}, properties: {name: ''}},
-    {id: 44, index: 4, path: ['default', 'button'], parentView: {id: 14, port: 0}},
+
+    {id: 67, index: 3, path: ['default', 'group'], parentView: {id: 14, port: 0}},
+
+    {id: 61, index: 3, path: ['default', 'group'], parentView: {id: 67, port: 0}},
+    {id: 64, index: 0, path: ['default', 'label'], parentView: {id: 61, port: 0}},
+    {id: 40, index: 1, path: ['default', 'text'], parentView: {id: 61, port: 0}, properties: {name: ''}},
+
+    {id: 62, index: 4, path: ['default', 'group'], parentView: {id: 67, port: 0}},
+    {id: 65, index: 0, path: ['default', 'label'], parentView: {id: 62, port: 0}},
+    {id: 42, index: 1, path: ['default', 'text'], parentView: {id: 62, port: 0}, properties: {name: ''}},
+
+    {id: 63, index: 5, path: ['default', 'group'], parentView: {id: 67, port: 0}},
+    {id: 66, index: 0, path: ['default', 'label'], parentView: {id: 63, port: 0}},
+    {id: 43, index: 1, path: ['default', 'text'], parentView: {id: 63, port: 0}, properties: {name: ''}},
+
+    {id: 68, index: 3, path: ['default', 'group'], parentView: {id: 67, port: 0}},
+
+    {id: 44, index: 4, path: ['default', 'button'], parentView: {id: 68, port: 0}},
     {id: 45, index: 0, path: ['default', 'label'], parentView: {id: 44, port: 0}},
-    {id: 46, index: 5, path: ['default', 'button'], parentView: {id: 14, port: 0}},
+
+    {id: 46, index: 5, path: ['default', 'button'], parentView: {id: 68, port: 0}},
     {id: 47, index: 0, path: ['default', 'label'], parentView: {id: 46, port: 0}},
 
-    {id: 51, index: 5, path: ['default', 'button'], parentView: {id: 14, port: 0}},
+    {id: 51, index: 5, path: ['default', 'button'], parentView: {id: 68, port: 0}},
     {id: 52, index: 0, path: ['default', 'label'], parentView: {id: 51, port: 0}},
 
     {id: 53, index: 3, path: ['default', 'group'], parentView: {id: 11, port: 0}},
@@ -93,7 +115,7 @@ const defaultEditorState = {
     {view: {id: 30}, mutator: {path: ['helloworld', 'disableIfNull'], properties: {target: 'modelText'}}},
     {view: {id: 31}, mutator: {path: ['helloworld', 'disableIfNull'], properties: {target: 'eventText'}}},
     {view: {id: 50}, mutator: {path: ['helloworld', 'disableIfNull'], properties: {target: 'eventModelIdText'}}},
-    {view: {id: 28}, mutator: {path: ['helloworld', 'hideIfNull'], properties: {target: 'target'}}},
+    {view: {id: 28}, mutator: {path: ['helloworld', 'positionAtTargetView'], properties: {target: 'target'}}},
   ],
 
   modelBindings: [
@@ -111,8 +133,7 @@ const defaultEditorState = {
     {view: {id: 48}, model: {id: 3, path: 'templateText'}},
 
     {view: {id: 40}, model: {id: 5, path: 'type'}},
-    {view: {id: 41}, model: {id: 5, path: 'parentId'}},
-    {view: {id: 42}, model: {id: 5, path: 'modelId'}},
+    {view: {id: 42}, model: {id: 5, path: 'modelTag'}},
     {view: {id: 43}, model: {id: 5, path: 'modelKey'}},
     {view: {id: 45}, model: {id: 4, path: 'create'}},
     {view: {id: 48}, model: {id: 3, path: 'viewProperties'}},
@@ -122,6 +143,10 @@ const defaultEditorState = {
 
     {view: {id: 54}, model: {id: 4, path: 'lastSaved'}},
     {view: {id: 55}, model: {id: 3, path: 'lastSaved'}},
+
+    {view: {id: 64}, model: {id: 4, path: 'type'}},
+    {view: {id: 65}, model: {id: 4, path: 'model'}},
+    {view: {id: 66}, model: {id: 4, path: 'property'}},
   ],
 
   eventBindings: [

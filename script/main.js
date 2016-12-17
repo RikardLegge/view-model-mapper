@@ -10,14 +10,14 @@ function main() {
   const modulePersistor = new LocalStoragePersistor();
 
   applicationF.register('saveState', (model) => {
-    modulePersistor.save('example', exampleState, modules);
+    // modulePersistor.save('example', exampleState, modules);
     modulePersistor.save('editor', editorState, modules);
 
     model.lastSaved = Date.now();
   });
   applicationF.register('loadState', () => reload());
   applicationF.register('clearState', () => {
-    modulePersistor.clean('example');
+    // modulePersistor.clean('example');
     modulePersistor.clean('editor');
   });
   applicationF.register('moveTarget', ({target:view, moveTarget:parent})=>{
@@ -44,24 +44,31 @@ function main() {
 
     view.parentView = {view: parent, port: 0};
   });
-  applicationF.register('addView', ({type, parentId, modelId, modelKey, name = 'default'}) => {
-    const parentView = exampleState.views.findById(parseInt(parentId));
-    const model = exampleState.models.findById(parseInt(modelId));
+  applicationF.register('addView', ({type, editor:{moveTarget}, modelTag, modelKey, name = 'default'}) => {
+    const module = modules.findByView(moveTarget);
+
+    if(!module){
+      console.log(`A view must be provided`);
+      return;
+    }
+
+    const parentView = moveTarget;
+    const model = module.models.findByTag(modelTag);
 
     if(!parentView)
       return console.error(`A valid parent view must be provided when adding views`);
 
-    if(!model)
-      return console.error(`A valid model must be provided when adding views`);
-
     const view = UI.default[type].create({parentView, properties: {name}});
 
-    const key = modelKey;
-    const binding = new ModelBinding();
-    binding.properties = {model, key};
-    view.modelBinding = binding;
+    if(model) {
+      const key = modelKey;
+      const binding = new ModelBinding();
+      binding.properties = {model};
+      binding.properties = {key};
+      view.modelBinding = binding;
+    }
 
-    exampleState.registerNewView(view);
+    module.registerNewView(view);
   });
   applicationF.register('removeView', (model) => {
     const target = model.target;
@@ -82,16 +89,16 @@ function main() {
     const moduleList = modules.modules = [];
 
     exampleState && exampleState.unload();
-    exampleState = modulePersistor.load('example', moduleList, defaultExamplePersistedState);
-    moduleList.push(exampleState);
+    // exampleState = modulePersistor.load('example', moduleList, defaultExamplePersistedState);
+    // moduleList.push(exampleState);
 
     editorState && editorState.unload();
     editorState = modulePersistor.load('editor', moduleList, defaultEditorState);
     moduleList.push(editorState);
 
-    const applicationModel = exampleState.models.findByTag('application');
+    // const applicationModel = exampleState.models.findByTag('application');
     // enableTicker(applicationModel, 'frameCount');
-    enableLogger(applicationModel, ['frameCount']);
+    // enableLogger(applicationModel, ['frameCount']);
 
     const editorModel = editorState.models.findByTag('editor');
     bindingEditor.setModule(editorModel, modules);

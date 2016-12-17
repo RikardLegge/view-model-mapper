@@ -6,54 +6,12 @@ html, body
   margin: 0
   padding: 0
 
-.expandableMenuGroup__container
-  height: 400px
-  background: red
-  padding: 5px
-
-.expandableMenuGroup__content
-  height: 100%
-  display: flex
-  flex-direction: column
-
-.expandableMenuHeaderGroup__container
-  height: 50px
-  background: blue
-
-.expandableMenuContentGroup__container
-  flex: 1
-  background: green
-.expandableMenuContentGroup__content
-  height: 100%
-
-.expandableMenuFooterGroup__container
-  height: 50px
-  background: orange
-
-.detailsMenu
-  +button
-
-  &Label
-    color: blue
-
-  &Button
-    &__container
-      display: inline-block
-      user-select: none
-
-    &__content
-      padding: 5px
-      margin: 3px
-      border: 3px solid green
-
-    &__hitbox:active &__content
-      background: green
-      color: white
-
-  &Group__container
-    margin: 5px
-    padding: 5px
-    border: 1px solid gray
+.editor__target
+  box-shadow: inset 0 0 0 2px orange,
+.editor__moveTarget
+  box-shadow: 0 0 0 2px green
+.editor__moveTarget.editor__target
+  box-shadow: inset 0 0 0 2px orange, 0 0 0 2px green
 
 .default
   +button
@@ -77,31 +35,28 @@ html, body
     padding: 5px
     border: 1px solid gray
 
-.user
-  +button
-
-  &Button
-    &__container
-      display: inline-block
-      user-select: none
-
-    &__content
-      padding: 10px
-      border: 2px dashed orange
-
-.user
+.debugLog
   &Group
     &__container
-      padding: 10px
-      background: blue
+      border: 1px solid red
+
+.stateActions
+  &Group
+    &__container
+      border: 1px solid blue
 
 .bindingEditor
+
   &Group
     &__container
-      position: absolute
-      bottom: 0
-      left: 0
-      width: 100%
+      background: white
+      border: 4px solid lightgray
+      display: none
+      width: 400px
+      padding: 10px
+
+    &--show
+      display: block
 
   &Label
     padding: 0 40px

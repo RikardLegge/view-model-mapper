@@ -1,10 +1,10 @@
 class BindingEditorStyler {
-  addStyle(view, {color='orange'}={}) {
-    view.element.style = `box-shadow: inset 0 0 0 2px ${color}, 0 0 0 2px red`;
+  addStyle(view, name) {
+    view.element.classList.add(`editor__${name}`);
   }
 
-  removeStyle(view) {
-    view.element.style = '';
+  removeStyle(view, name) {
+    view.element.classList.remove(`editor__${name}`);
   }
 }
 
@@ -27,57 +27,52 @@ class BindingEditor {
     });
 
     editorModel.listen('target', ()=>{
-      this.applyTargetStyle(editorModel.target);
+      this.applyTargetStyle(editorModel.target, 'target');
       this.propagateTargetChange();
     });
 
     editorModel.listen('moveTarget', ()=>{
-      this.applyTargetStyle(editorModel.moveTarget, 'green');
+      this.applyTargetStyle(editorModel.moveTarget, 'moveTarget');
     });
   }
 
   attach() {
-    document.body.addEventListener('mousemove', event => this.trySetTargetFromEvent(event));
-  }
+    document.body.addEventListener('contextmenu', (e)=>{
+      e.preventDefault();
+      const closest = this.findClosestViewBoundElement(e.target);
 
-  trySetTargetFromEvent(event) {
-    if(event.ctrlKey){
-      this.setMoveTarget(this.getElementFromMouseEvent(event));
-    } else if (event.shiftKey) {
-      this.setTarget(this.getElementFromMouseEvent(event));
-    }
-  }
-
-  getElementFromMouseEvent(event){
-    const {pageX: x, pageY: y} = event;
-    const element = document.elementFromPoint(x, y);
-    return this.findClosestViewBoundElement(element);
+      if(e.shiftKey) {
+        this.setMoveTarget(closest);
+      } else {
+        this.setTarget(closest);
+      }
+    });
   }
 
   setMoveTarget(element){
     const editorModel = this.editorModel;
     const target = editorModel.moveTarget;
 
-    this.unApplyTargetStyle(element, target);
+    this.unApplyTargetStyle(element, target, 'moveTarget');
 
     editorModel.moveTarget = (element && element !== document.body)
       ? element.boundView
       : null;
   }
 
-  unApplyTargetStyle(element, target) {
+  unApplyTargetStyle(element, target, name) {
     if (target) {
       const targetElement = target.element;
       if (element === targetElement) {
         return;
       }
-      this.style.removeStyle(target);
+      this.style.removeStyle(target, name);
     }
   }
 
-  applyTargetStyle(target, color){
+  applyTargetStyle(target, name){
     if(target){
-      this.style.addStyle(target, {color});
+      this.style.addStyle(target, name);
     }
   }
 
@@ -85,7 +80,7 @@ class BindingEditor {
     const editorModel = this.editorModel;
     const target = editorModel.target;
 
-    this.unApplyTargetStyle(element, target);
+    this.unApplyTargetStyle(element, target, 'target');
 
     editorModel.target = (element && element !== document.body)
       ? element.boundView

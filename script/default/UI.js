@@ -78,6 +78,16 @@ const groupView = new ViewBindingDefinition({
   setClass: ({element: {classList}}, cls, add)=>add
     ? !classList.contains(cls) && classList.add(cls)
     : classList.contains(cls) && classList.remove(cls),
+  setStyle: ({element}, styleName, value) => {
+    element.style[styleName] = value;
+  },
+  methods: {
+    setPosition: (vd, view, {x, y}) => {
+      vd.setStyle(view, 'position', `absolute`);
+      vd.setStyle(view, 'left', `${x}px`);
+      vd.setStyle(view, 'top', `${y}px`);
+    },
+  }
 });
 
 const buttonTemplate = new Template({name: 'Button'},
