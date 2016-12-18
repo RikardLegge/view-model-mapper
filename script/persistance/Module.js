@@ -7,6 +7,7 @@ class Module {
     this.models = null;
     this.views = null;
     this.middleware = null;
+    this.module = this;
   }
 
   load(obj, modules) {
@@ -52,3 +53,5 @@ class Module {
   }
 
 }
+
+ModuleSerializer.add('header', ({header})=>header);

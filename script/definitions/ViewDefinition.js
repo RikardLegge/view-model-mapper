@@ -102,3 +102,25 @@ class ViewDefinition extends ComponentManager(Definition) {
     return this[viewDefinitionData].ports;
   }
 }
+
+ModuleSerializer.add('views', ({views})=>{
+  return views.data.map(({id, view}) => {
+    const properties = view.templateProperties;
+    const path = view.__path;
+    const element = view.element;
+    const index = [...element.parentNode.children].indexOf(element);
+
+    let parentView;
+    let parentViewInstance = view.parentView;
+    if (parentViewInstance) {
+      const {id} = parentViewInstance.meta;
+      const port = parentViewInstance.getPortIndex(view.parentPort);
+
+      assert(port >= 0, `Unable to find element port index, please put the following element in a dom node with a [data-port] attribute`, view.element);
+
+      parentView = {id, port};
+    }
+
+    return {id, index, path, parentView, properties};
+  });
+});

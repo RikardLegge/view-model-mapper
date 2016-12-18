@@ -120,6 +120,42 @@ class ModelBinding {
 
 }
 
+
+ModuleSerializer.add('modelBindings', ({views})=>{
+  return views.getList()
+    .filter(view => !!view.modelBinding)
+    .map(view => {
+      const modelBinding = view.modelBinding;
+      const model = modelBinding.model;
+      const middlewareInstance = modelBinding.middleware;
+
+      const {id: viewId} = view.meta;
+      const {id: modelId} = model.meta;
+      const path = modelBinding.key;
+
+      let middleware;
+      if(middlewareInstance){
+        middleware = {};
+
+        const get = middlewareInstance.get;
+        if(get){
+          const {method:{meta:{id}}, properties} = get;
+          middleware.get = {id, properties}
+        }
+
+        const set = middlewareInstance.set;
+        if(set){
+          const {method:{meta:{id}}, properties} = set;
+          middleware.set = {id, properties}
+        }
+      }
+
+      return {view: {id: viewId}, model: {id: modelId, path}, middleware};
+    });
+});
+
+
+
 ViewDefinition.addComponent({
   name: 'modelBinding',
   set: function(data, value) {

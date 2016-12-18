@@ -125,3 +125,36 @@ class ModelDefinition extends EventSource(Definition) {
 
 }
 
+ModuleSerializer.add('models', ({models, module: thisModule}, {modules})=>{
+  return models.getList()
+    .map((model) => {
+      const ignoredProperties = ['ignoreEqualSet', 'middleware'];
+      const {id, tag: name} = model.meta;
+      const aliases = [];
+      const middleware = Object.entries(model.middleware).reduce((middleware, [key, values]) => {
+        middleware.push(...values.map(value => ({key, middleware: {path: value.execute.__path, properties: value.properties}})));
+        return middleware;
+      }, []);
+      const properties = Object.entries(model).reduce((properties, [key, value]) => {
+        if (ignoredProperties.indexOf(key) === -1) {
+          if (value instanceof ModelDefinition) {
+            aliases.push({key, value: {type: 'model', id: value.meta.id}});
+          } else if (value instanceof ViewDefinition) {
+            const meta = value.meta;
+            const module = modules.findByView(value);
+            const moduleId = thisModule !== module
+              ? module.header.id
+              : null;
+
+            aliases.push({key, value: {type: 'view', id: meta.id, moduleId}});
+          } else if (value && (typeof value === 'object') && value.constructor === Object) {
+            console.error(`Value not serializable`, value);
+          } else {
+            properties[key] = value;
+          }
+        }
+        return properties;
+      }, {});
+      return {id, name, properties, aliases, middleware};
+    });
+});
