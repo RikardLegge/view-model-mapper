@@ -10,10 +10,10 @@ ViewDefinition.addComponent({
   set: function(data, value, key) {
     data[key] = value;
 
-    const {mutator, binding} = data;
+    const {[key]:mutator, modelBinding} = data;
 
-    if (mutator && binding)
-      mutator.execute(this, data.modelBinding.model, this.viewMutator.properties);
+    if (mutator && modelBinding)
+      mutator.execute(this, modelBinding.model, this.viewMutator.properties);
   },
 
 });

@@ -12,6 +12,7 @@ helloworldF.register('hideIfNull', (view, model, {target}) =>
 
 helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
   const targetView = model[target];
+  view.setPosition({x: 0, y: 0});
 
   if(targetView) {
     const element = targetView.element;
@@ -47,7 +48,6 @@ helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
     }
   }
 
-  view.setPosition({x: 0, y: 0});
   view.hide();
 
   function isDescendant(parent, child) {

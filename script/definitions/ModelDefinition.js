@@ -62,6 +62,7 @@ class ModelDefinition extends EventSource(Definition) {
     });
 
     this[autoSetPath](value, key);
+    this.trigger(key, value);
   }
 
   addMethodProperty(key, get, set, dependencies = []) {
@@ -82,6 +83,8 @@ class ModelDefinition extends EventSource(Definition) {
     dependencies.forEach((dependence) => {
       this.listen(dependence, () => this.trigger(key, this[key]));
     });
+
+    this.trigger(key, this[key]);
   }
 
   attachProperties(object) {
