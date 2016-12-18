@@ -12,12 +12,27 @@
 
 <script src="script/core/Assert.js"></script>
 <script src="script/core/EventSource.js"></script>
-<script src="script/core/ModelDefinition.js"></script>
 <script src="script/core/Reflection.js"></script>
 <script src="script/core/Registry.js"></script>
 <script src="script/core/Template.js"></script>
-<script src="script/core/ViewBindingDefinition.js"></script>
-<script src="script/core/ViewFactory.js"></script>
+
+<script src="script/persistance/DataManager.js"></script>
+<script src="script/persistance/Module.js"></script>
+<script src="script/persistance/ModuleParser.js"></script>
+<script src="script/persistance/ModuleSerializer.js"></script>
+<script src="script/persistance/ModuleCollection.js"></script>
+<script src="script/persistance/LocalStoragePersistor.js"></script>
+
+<script src="script/definitions/Definition.js"></script>
+<script src="script/definitions/ModelDefinition.js"></script>
+<script src="script/definitions/ModuleManager.js"></script>
+<script src="script/definitions/ViewDefinition.js"></script>
+<script src="script/definitions/ViewManager.js"></script>
+<script src="script/definitions/MiddlewareDefinition.js"></script>
+<script src="script/definitions/MiddlewareManager.js"></script>
+
+<script src="script/bindings/ModelBinding.js"></script>
+<script src="script/bindings/EventBinding.js"></script>
 
 <script src="script/functions/Functions.js"></script>
 <script src="script/functions/default.js"></script>
@@ -25,27 +40,20 @@
 <script src="script/functions/helloworld.js"></script>
 
 <script src="script/ui/UI.js"></script>
+<script src="script/ui/ViewBindingDefinition.js"></script>
+<script src="script/ui/ViewFactory.js"></script>
 <script src="script/ui/default.js"></script>
-
-<script src="script/bindings/ModelBinding.js"></script>
-<script src="script/bindings/EventBinding.js"></script>
-<script src="script/bindings/ViewBinding.js"></script>
-
-<script src="script/persistance/DataManager.js"></script>
-<script src="script/persistance/ModuleManager.js"></script>
-<script src="script/persistance/MiddlewareManager.js"></script>
-<script src="script/persistance/ViewManager.js"></script>
-<script src="script/persistance/Module.js"></script>
-<script src="script/persistance/ModuleParser.js"></script>
-<script src="script/persistance/ModuleSerializer.js"></script>
-<script src="script/persistance/ModuleCollection.js"></script>
-<script src="script/persistance/LocalStoragePersistor.js"></script>
 
 <script src="script/defaultPersitedState.js"></script>
 <script src="script/bindingEditor.js"></script>
 <script src="script/main.js"></script>
 
-<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
-  ':35729/livereload.js?snipver=2"></' + 'script>')</script>
+<script>
+  const host = location.host.split(':')[0];
+  if(host === 'localhost'){
+    const url = `http://${host}:35729/livereload.js?snipver=2`;
+    document.write(`<${'script'} src="${url}"></${'script'}>`)
+  }
+</script>
 </body>
 </html>

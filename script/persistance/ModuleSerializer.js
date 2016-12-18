@@ -108,7 +108,7 @@ class ModuleSerializer {
           if (ignoredProperties.indexOf(key) === -1) {
             if (value instanceof ModelDefinition) {
               aliases.push({key, value: {type: 'model', id: value.meta.id}});
-            } else if (value instanceof ViewBinding) {
+            } else if (value instanceof ViewDefinition) {
               const meta = value.meta;
               const module = modules.findByView(value);
               const moduleId = thisModule !== module

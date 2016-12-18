@@ -1,10 +1,11 @@
-const viewBindingData = Symbol(`viewBindingData`);
-class ViewBinding {
+const viewDefinitionData = Symbol(`viewBindingData`);
+class ViewDefinition extends Definition {
 
   constructor({template, properties}) {
-    this[viewBindingData] = {};
-    this[viewBindingData].template = template;
-    this[viewBindingData].templateProperties = properties;
+    super();
+    this[viewDefinitionData] = {};
+    this[viewDefinitionData].template = template;
+    this[viewDefinitionData].templateProperties = properties;
   }
 
   replaceOldElement(element) {
@@ -21,7 +22,7 @@ class ViewBinding {
   }
 
   migrateChildViews(ports) {
-    const oldPorts = this[viewBindingData].ports || [];
+    const oldPorts = this[viewDefinitionData].ports || [];
     oldPorts.forEach((({children: connectors}, index) => {
       const port = ports[Math.min(index, ports.length - 1)];
       [...connectors].forEach(connector => port.appendChild(connector));
@@ -39,7 +40,7 @@ class ViewBinding {
 
     this.template.remove
       ? this.template.remove()
-      : this[viewBindingData].element.remove();
+      : this[viewDefinitionData].element.remove();
 
     return childViews;
   }
@@ -57,8 +58,8 @@ class ViewBinding {
       activeElement.focus();
     }
 
-    this[viewBindingData].element = element;
-    this[viewBindingData].ports = ports;
+    this[viewDefinitionData].element = element;
+    this[viewDefinitionData].ports = ports;
 
     element.boundView = this;
     this.attachElement();
@@ -88,23 +89,11 @@ class ViewBinding {
   }
 
   getPortIndex(port) {
-    return this[viewBindingData].ports.indexOf(port);
+    return this[viewDefinitionData].ports.indexOf(port);
   }
 }
 
-Object.defineProperties(ViewBinding.prototype, {
-  meta: {
-    get() {
-      return this[viewBindingData].meta;
-    },
-    set(value) {
-      if(!this[viewBindingData].meta) {
-        this[viewBindingData].meta = value;
-      } else {
-        console.warn(`Meta is only allowed to be set once`, this, value);
-      }
-    }
-  },
+Object.defineProperties(ViewDefinition.prototype, {
   parentView: {
     get(){
       let currentElement = this.element;
@@ -124,26 +113,26 @@ Object.defineProperties(ViewBinding.prototype, {
   },
   parentPort: {
     get(){
-      return this[viewBindingData].element.parentElement;
+      return this[viewDefinitionData].element.parentElement;
     }
   },
   element: {
     get(){
-      return this[viewBindingData].element;
+      return this[viewDefinitionData].element;
     }
   },
   ports: {
     get(){
-      return this[viewBindingData].ports;
+      return this[viewDefinitionData].ports;
     }
   },
 
   viewMutator: {
     get(){
-      return this[viewBindingData].viewMutator;
+      return this[viewDefinitionData].viewMutator;
     },
     set(value){
-      this[viewBindingData].viewMutator = value;
+      this[viewDefinitionData].viewMutator = value;
 
       if (this.viewMutator && this.modelBinding)
         this.viewMutator.execute(this, this.modelBinding.model, this.viewMutator.properties);
@@ -151,17 +140,17 @@ Object.defineProperties(ViewBinding.prototype, {
   },
   modelBinding: {
     get(){
-      return this[viewBindingData].modelBinding;
+      return this[viewDefinitionData].modelBinding;
     },
     set(value){
       if (this.modelBinding) {
         this.modelBinding.listen = false;
       }
 
-      this[viewBindingData].modelBinding = value;
+      this[viewDefinitionData].modelBinding = value;
 
-      if(this[viewBindingData].modelBinding) {
-        this[viewBindingData].modelBinding.listen = () => this.modelChanged();
+      if(this[viewDefinitionData].modelBinding) {
+        this[viewDefinitionData].modelBinding.listen = () => this.modelChanged();
       }
 
       this.modelChanged();
@@ -169,27 +158,27 @@ Object.defineProperties(ViewBinding.prototype, {
   },
   eventBinding: {
     get(){
-      return this[viewBindingData].eventBinding;
+      return this[viewDefinitionData].eventBinding;
     },
     set(value){
-      this[viewBindingData].eventBinding = value;
+      this[viewDefinitionData].eventBinding = value;
     },
   },
 
   template: {
     get() {
-      return this[viewBindingData].template;
+      return this[viewDefinitionData].template;
     },
     set(value) {
-      this[viewBindingData].template = value;
+      this[viewDefinitionData].template = value;
     }
   },
   templateProperties: {
     get() {
-      return this[viewBindingData].templateProperties;
+      return this[viewDefinitionData].templateProperties;
     },
     set(value) {
-      this[viewBindingData].templateProperties = value;
+      this[viewDefinitionData].templateProperties = value;
     }
   }
 });

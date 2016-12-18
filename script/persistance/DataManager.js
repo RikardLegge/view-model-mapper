@@ -1,7 +1,7 @@
 class DataManager {
-  constructor(data, metaKey) {
+  constructor(data, dataKey) {
     this.data = [];
-    this.metaKey = metaKey;
+    this.dataKey = dataKey;
 
     data.forEach(it=>this.add(it));
   }
@@ -11,12 +11,12 @@ class DataManager {
   }
 
   getList() {
-    return this.data.map(it => it[this.metaKey]);
+    return this.data.map(it => it[this.dataKey]);
   }
 
   find(op) {
     const def = this.data.find(op);
-    return def ? def[this.metaKey] : null;
+    return def ? def[this.dataKey] : null;
   }
 
   remove(value) {
@@ -30,7 +30,7 @@ class DataManager {
 
   groupByTag(){
     return this.data.reduce((group, valueMeta) => {
-      group[valueMeta.tag] = valueMeta[this.metaKey];
+      group[valueMeta.tag] = valueMeta[this.dataKey];
       return group;
     }, {});
   }

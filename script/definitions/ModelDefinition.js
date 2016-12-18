@@ -3,7 +3,7 @@ const applyMiddleware = Symbol(`applyMiddleware`);
 const autoSetPath = Symbol(`autoSetPath`);
 const unSetPath = Symbol(`unSetPath`);
 
-class ModelDefinition extends EventSource {
+class ModelDefinition extends EventSource(Definition) {
 
   constructor(object) {
     super();
@@ -108,18 +108,6 @@ class ModelDefinition extends EventSource {
 
 }
 Object.defineProperties(ModelDefinition.prototype, {
-  meta: {
-    get() {
-      return this[modelData].meta;
-    },
-    set(value) {
-      if(!this[modelData].meta) {
-        this[modelData].meta = value;
-      } else {
-        console.warn(`Meta is only allowed to be set once, value ignored`, this, value);
-      }
-    }
-  },
   parent: {
     get(){
       const parentDescriptor = this[modelData].parentDescriptor;

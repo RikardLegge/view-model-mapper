@@ -23,7 +23,9 @@ class ModuleParser {
     const middlewareSet = {};
 
     obj.forEach(({id, path, properties})=>{
-      const middleware = {execute: this.reducePath(Functions, path), properties};
+      const middleware = new MiddlewareDefinition();
+      middleware.execute = this.reducePath(Functions, path);
+      middleware.properties = properties;
       const meta = {id, middleware};
 
       middlewareSet[id] = meta;

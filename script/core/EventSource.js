@@ -2,8 +2,12 @@ const triggers = Symbol('triggers');
 const callStack = Symbol(`callStack`);
 const allowEventBubbling = Symbol(`allowEventBubbling`);
 
-class EventSource {
+const EventSource = (superclass) => class extends superclass {
+
+  get isEventSource(){return true;}
+
   constructor() {
+    super();
     this[triggers] = [];
     this[callStack] = [];
     this[allowEventBubbling] = true;
@@ -41,14 +45,14 @@ class EventSource {
 
     if (this[allowEventBubbling]) {
       const {model: parent, key: parentKey} = this.parent;
-      if (parent instanceof EventSource) {
+      if (parent && parent.isEventSource) {
         parent.trigger(`${parentKey}.${key}`, value, this);
       }
     }
 
     this[callStack].pop();
   }
-}
+};
 
 function checkGlob(glob, key) {
   if (glob === '*') {

@@ -1,6 +1,6 @@
 const notYetImplemented = () => {throw "Not yet implemented"};
 
-const defaultViewDefinition = {
+const defaultViewBindingDefinition = {
   methods: {
     construct: (vd, view)=> vd.construct
       ? vd.construct(view)
@@ -38,7 +38,7 @@ const defaultViewDefinition = {
 
 class ViewBindingDefinition {
 
-  constructor(viewDefinition = {}, parentViewDefinition = defaultViewDefinition) {
+  constructor(viewDefinition = {}, parentViewDefinition = defaultViewBindingDefinition) {
     this.viewDefinition = viewDefinition;
     this.parentViewDefinition = parentViewDefinition;
   }
@@ -47,7 +47,7 @@ class ViewBindingDefinition {
     const parentMethods = this.parentViewDefinition.methods;
     const methods = this.viewDefinition.methods || {};
     const vd = this.viewDefinition;
-    const view = new ViewBinding(viewProperties);
+    const view = new ViewDefinition(viewProperties);
 
     Object.entries(parentMethods).forEach(([key, value])=>view[key] = value.bind(null, vd, view));
     Object.entries(methods).forEach(([key, value])=>view[key] = value.bind(null, vd, view));

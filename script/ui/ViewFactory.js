@@ -1,7 +1,7 @@
-const defaultViewBindingDefinition = new ViewBindingDefinition();
+const nullViewDefinition = new ViewBindingDefinition();
 class ViewFactory {
 
-  constructor(template, viewDefinition = defaultViewBindingDefinition) {
+  constructor(template, viewDefinition = nullViewDefinition) {
     this.template = template;
     this.viewDefinition = viewDefinition;
   }
