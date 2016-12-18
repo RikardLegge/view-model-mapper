@@ -1,8 +1,8 @@
 # view-model-mapper
 An visual view model mapping utility to make javascript interfaces more declarative.
 
-## Motivation
-This Project was inspired by the complexity of syncing data in user interfaces when writing web application.
+## Motivation and synopsis
+This Project was inspired by the complexity of syncing data in user interfaces when writing web application. The view is defined through a schema which has taken it's inspiration from relational databases. Everything has an id and is connected together when the page page is parsed. This helps provide a modular and expandable schema for defining new types of behaviours.
 
 ## Goals
 
@@ -14,7 +14,7 @@ This Project was inspired by the complexity of syncing data in user interfaces w
 
 * [TODO] Allow arrays in models and arrays of models
 
-* [Partial] Drag and drop UI for building a user interface and mapping model data (Through dev console) 
+* Drag and drop UI for building a user interface and mapping model data (Through dev console) 
 
 * Middleware is responsible for more complex data manipulation actions as well as data validation and type casting.
 
