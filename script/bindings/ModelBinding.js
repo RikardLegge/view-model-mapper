@@ -33,14 +33,29 @@ Object.defineProperties(ModelBinding.prototype, {
   value: {
     get(){
       const value = this.model[this.key];
-      return this.middleware
-        ? this.middleware.execute(value, this.middleware.properties)
-        : value;
+
+      let result;
+      if(this.middleware && this.middleware.get){
+        const {method, properties} = this.middleware.get;
+        const {execute, properties: defaultProperties} = method;
+        result = execute(value, properties || defaultProperties);
+      } else {
+        result = value;
+      }
+
+      return result;
     },
     set(value){
-      this.model[this.key] = this.middleware
-        ? this.middleware.execute(value, this.middleware.properties)
-        : value;
+      let result;
+      if(this.middleware && this.middleware.set){
+        const {method, properties} = this.middleware.set;
+        const {execute, properties: defaultProperties} = method;
+        result = execute(value, properties || defaultProperties);
+      } else {
+        result = value;
+      }
+
+      this.model[this.key] = result;
     }
   },
 

@@ -6,13 +6,15 @@ class Module {
     this.header = {};
     this.models = null;
     this.views = null;
+    this.middleware = null;
   }
 
   load(obj, modules) {
-    const {header, models, views} = this.stateParser.parse(obj, modules);
+    const {header, models, views, middleware} = this.stateParser.parse(obj, modules);
     this.header = header;
     this.models = models;
     this.views = views;
+    this.middleware = middleware;
   }
 
   detachView(view){

@@ -1,6 +1,7 @@
 const helloworldF = new Registry('helloworld', Functions);
 
 helloworldF.register('invert', b => !b);
+helloworldF.register('none', b => b);
 helloworldF.register('wrapLines', a => a.join('<br>'));
 
 helloworldF.register('disableIfNull', (view, model, {target}) =>
@@ -61,5 +62,5 @@ helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
 });
 
 helloworldF.register('rewriteNull', (value, properties) =>
-  value !== null ? value : properties['default']);
+  value !== null ? value : properties['placeholder']);
 

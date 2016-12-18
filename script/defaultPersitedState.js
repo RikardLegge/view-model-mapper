@@ -111,6 +111,12 @@ const defaultEditorState = {
     {id: 55, index: 1, path: ['default', 'label'], parentView: {id: 53, port: 0}},
   ],
 
+  middleware: [
+    {id: 1, path: ['helloworld', 'none']},
+    {id: 2, path: ['helloworld', 'wrapLines'], properties: {deliminer: '<br>'}},
+    {id: 3, path: ['helloworld', 'rewriteNull'], properties: {placeholder: '[NULL]'}},
+  ],
+
   viewMutators: [
     {view: {id: 30}, mutator: {path: ['helloworld', 'disableIfNull'], properties: {target: 'modelText'}}},
     {view: {id: 31}, mutator: {path: ['helloworld', 'disableIfNull'], properties: {target: 'eventText'}}},
@@ -124,11 +130,11 @@ const defaultEditorState = {
     {view: {id: 37}, model: {id: 4, path: 'clear'}},
     {view: {id: 52}, model: {id: 4, path: 'move'}},
     {view: {id: 47}, model: {id: 4, path: 'delete'}},
-    {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middleware: {path: ['helloworld', 'wrapLines']}},
+    {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middleware: {get: {id: 2}}},
 
-    {view: {id: 30}, model: {id: 3, path: 'modelText'}, middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[ModelBinding UNAVAILABLE]'}}},
-    {view: {id: 31}, model: {id: 3, path: 'eventText'}, middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventBinding UNAVAILABLE]'}}},
-    {view: {id: 50}, model: {id: 3, path: 'eventModelIdText'}, middleware: {path: ['helloworld', 'rewriteNull'], properties: { 'default': '[EventModelID UNAVAILABLE]'}}},
+    {view: {id: 30}, model: {id: 3, path: 'modelText'}, middleware: {get: {id: 3, properties: {placeholder: '[ModelBinding UNAVAILABLE]'}}}},
+    {view: {id: 31}, model: {id: 3, path: 'eventText'}, middleware: {get: {id: 3, properties: {placeholder: '[EventBinding UNAVAILABLE]'}}}},
+    {view: {id: 50}, model: {id: 3, path: 'eventModelIdText'}, middleware: {get: {id: 3, properties: {placeholder: '[EventModelID UNAVAILABLE]'}}}},
 
     {view: {id: 48}, model: {id: 3, path: 'templateText'}},
 

@@ -2,14 +2,23 @@ class ModuleSerializer {
 
   serialize(module, modules) {
     const header = this.serializeHeader(module.header);
-    const views = this.serializeViews(module.views);
+    const middleware = this.serializeMiddleware(module.middleware);
     const models = this.serializeModels(module.models, module, modules);
 
+    const views = this.serializeViews(module.views);
     const viewMutators = this.serializeViewMutators(module.views);
-    const modelBindings = this.serializeModelBindings(module.views);
+    const modelBindings = this.serializeModelBindings(module.views, module.middleware);
     const eventBindings = this.serializeEventBindings(module.views);
 
-    return {header, models, views, viewMutators, modelBindings, eventBindings};
+    return {header, models, views, middleware, viewMutators, modelBindings, eventBindings};
+  }
+
+  serializeMiddleware(middleware) {
+    return middleware.data.map(({id, middleware}) => {
+      const properties = middleware.properties;
+      const path = middleware.execute.__path;
+      return {id, path, properties};
+    });
   }
 
   serializeViewMutators(views) {
@@ -25,7 +34,7 @@ class ModuleSerializer {
       });
   }
 
-  serializeModelBindings(views) {
+  serializeModelBindings(views, middlewares) {
     return views.getList()
       .filter(view => !!view.modelBinding)
       .map(view => {
@@ -39,9 +48,18 @@ class ModuleSerializer {
 
         let middleware;
         if(middlewareInstance){
-          middleware = {
-            path: middlewareInstance.execute.__path,
-            properties: middlewareInstance.properties
+          middleware = {};
+
+          const get = middlewareInstance.get;
+          if(get){
+            const {method:{meta:{id}}, properties} = get;
+            middleware.get = {id, properties}
+          }
+
+          const set = middlewareInstance.set;
+          if(set){
+            const {method:{meta:{id}}, properties} = set;
+            middleware.set = {id, properties}
           }
         }
 

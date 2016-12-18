@@ -2,39 +2,83 @@ class ModuleParser {
 
   parse(obj, modules) {
     const header = this.parseHeader(obj.header);
+
     const {models, unresolvedModelAliases} = this.parseModels(obj.models);
-    const views = this.parseViews(obj.views, models);
+    const {views} = this.parseViews(obj.views, models);
+    const {middlewares} = this.parseMiddlewares(obj.middleware);
 
     this.resolveModelAliases(unresolvedModelAliases, models, views, modules);
 
-    this.parseModelBindings(obj.modelBindings, models, views);
+    const {unresolvedModelBindingMiddleware} = this.parseModelBindings(obj.modelBindings, models, views);
+
     this.parseEventBindings(obj.eventBindings, models, views);
     this.parseViewMutators(obj.viewMutators, views);
 
-    return {header, models, views};
+    this.resolveModelBindingMiddleware(unresolvedModelBindingMiddleware, middlewares);
+
+    return {header, models, views, middleware: middlewares};
+  }
+
+  parseMiddlewares(obj){
+    const middlewareSet = {};
+
+    obj.forEach(({id, path, properties})=>{
+      const middleware = {execute: this.reducePath(Functions, path), properties};
+      const meta = {id, middleware};
+
+      middlewareSet[id] = meta;
+      middleware.meta = meta;
+    });
+
+    const middlewares = new MiddlewareManager(Object.values(middlewareSet));
+    return {middlewares};
+  }
+
+  resolveModelBindingMiddleware(unresolvedModelBindingMiddleware, middlewares){
+    unresolvedModelBindingMiddleware.forEach(({modelBinding, middleware: middlewareDef})=>{
+      const middleware = {get:null, set: null};
+      const get = middlewareDef.get;
+      const set = middlewareDef.set;
+
+      assert(get || set, `A get and or a set method is required for a model binding to be resolved`);
+
+      if(get)
+        middleware.get = createMethod(get);
+
+      if(set)
+        middleware.set = createMethod(set);
+
+      modelBinding.middleware = middleware
+    });
+
+    function createMethod({id, properties}){
+      const method = middlewares.findById(id);
+
+      assert(method, `No middleware method found for id`, id);
+
+      return {method: method, properties: properties};
+    }
   }
 
   parseModelBindings(obj, models, views) {
-    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: modelPath}, middleware: middlewareDef={}}) => {
+    const unresolvedModelBindingMiddleware = [];
+
+    obj.forEach(({view:{id: viewId}, model:{id: modelId, path: key}, middleware}) => {
       const model = models.findById(modelId);
       const view = views.findById(viewId);
 
-      let middleware;
-      if(middlewareDef.path){
-        middleware = {
-          execute: this.reducePath(Functions, middlewareDef.path),
-          properties: middlewareDef.properties
-        }
-      }
+      assert(view, `No view found when parsing model bindings`);
+      assert(model, `Model "${modelId}" not connected using view/model binding`, view, key);
 
       const modelBinding = new ModelBinding();
-      modelBinding.properties = {model, middleware, key: modelPath};
-
-      assert(view, `No view found when parsing model bindings`);
-      model || console.warn(`Model "${modelId}" not connected using view/model binding`, view, modelPath);
-
+      modelBinding.properties = {model, key};
       view.modelBinding = modelBinding;
+
+      if(middleware)
+        unresolvedModelBindingMiddleware.push({modelBinding, middleware});
     });
+
+    return {unresolvedModelBindingMiddleware};
   }
 
   parseEventBindings(obj, models, views) {
@@ -130,7 +174,7 @@ class ModuleParser {
   }
 
   parseViews(obj) {
-    const views = {};
+    const viewsSet = {};
     const unattachedViews = [];
 
     obj.sort((a, b) => a.index - b.index).forEach(({
@@ -145,18 +189,19 @@ class ModuleParser {
       const meta = {id, view};
       view.meta = meta;
 
-      views[id] = meta;
+      viewsSet[id] = meta;
 
       if (parentViewDef)
         unattachedViews.push({view, id: parentViewDef.id, port: parentViewDef.port});
     });
 
     unattachedViews.forEach(({view, id, port}) => {
-      assert(views[id].view, `No view found when attaching view to parent ${id}`, view, port);
-      view.parentView = {view: views[id].view, port};
+      assert(viewsSet[id].view, `No view found when attaching view to parent ${id}`, view, port);
+      view.parentView = {view: viewsSet[id].view, port};
     });
 
-    return new ViewManager(Object.values(views));
+    const views = new ViewManager(Object.values(viewsSet));
+    return {views};
   }
 
   reducePath(obj, path) {
