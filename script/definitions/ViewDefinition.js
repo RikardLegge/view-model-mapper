@@ -91,94 +91,81 @@ class ViewDefinition extends Definition {
   getPortIndex(port) {
     return this[viewDefinitionData].ports.indexOf(port);
   }
-}
 
-Object.defineProperties(ViewDefinition.prototype, {
-  parentView: {
-    get(){
-      let currentElement = this.element;
-      while (currentElement = currentElement.parentNode) {
-        const view = currentElement.boundView;
-        if (view) {
-          return view;
-        }
-      }
-    },
-    set({view, port = 0}={}){
+  get parentView(){
+    let currentElement = this.element;
+    while (currentElement = currentElement.parentNode) {
+      const view = currentElement.boundView;
       if (view) {
-        assert(view.ports[port], `The port ${port} does not exist on`, view);
-        view.ports[port].appendChild(this.element);
+        return view;
       }
-    }
-  },
-  parentPort: {
-    get(){
-      return this[viewDefinitionData].element.parentElement;
-    }
-  },
-  element: {
-    get(){
-      return this[viewDefinitionData].element;
-    }
-  },
-  ports: {
-    get(){
-      return this[viewDefinitionData].ports;
-    }
-  },
-
-  viewMutator: {
-    get(){
-      return this[viewDefinitionData].viewMutator;
-    },
-    set(value){
-      this[viewDefinitionData].viewMutator = value;
-
-      if (this.viewMutator && this.modelBinding)
-        this.viewMutator.execute(this, this.modelBinding.model, this.viewMutator.properties);
-    }
-  },
-  modelBinding: {
-    get(){
-      return this[viewDefinitionData].modelBinding;
-    },
-    set(value){
-      if (this.modelBinding) {
-        this.modelBinding.listen = false;
-      }
-
-      this[viewDefinitionData].modelBinding = value;
-
-      if(this[viewDefinitionData].modelBinding) {
-        this[viewDefinitionData].modelBinding.listen = () => this.modelChanged();
-      }
-
-      this.modelChanged();
-    }
-  },
-  eventBinding: {
-    get(){
-      return this[viewDefinitionData].eventBinding;
-    },
-    set(value){
-      this[viewDefinitionData].eventBinding = value;
-    },
-  },
-
-  template: {
-    get() {
-      return this[viewDefinitionData].template;
-    },
-    set(value) {
-      this[viewDefinitionData].template = value;
-    }
-  },
-  templateProperties: {
-    get() {
-      return this[viewDefinitionData].templateProperties;
-    },
-    set(value) {
-      this[viewDefinitionData].templateProperties = value;
     }
   }
-});
+  set parentView(value){
+    const {view, port = 0} = value || {};
+    if (view) {
+      assert(view.ports[port], `The port ${port} does not exist on`, view);
+      view.ports[port].appendChild(this.element);
+    }
+  }
+
+  get parentPort(){
+    return this[viewDefinitionData].element.parentElement;
+  }
+
+  get element(){
+    return this[viewDefinitionData].element;
+  }
+
+  get ports(){
+    return this[viewDefinitionData].ports;
+  }
+
+  get viewMutator(){
+    return this[viewDefinitionData].viewMutator;
+  }
+  set viewMutator(value){
+    this[viewDefinitionData].viewMutator = value;
+
+    if (this.viewMutator && this.modelBinding)
+      this.viewMutator.execute(this, this.modelBinding.model, this.viewMutator.properties);
+  }
+
+  get modelBinding(){
+    return this[viewDefinitionData].modelBinding;
+  }
+  set modelBinding(value){
+    if (this.modelBinding) {
+      this.modelBinding.listen = false;
+    }
+
+    this[viewDefinitionData].modelBinding = value;
+
+    if(this[viewDefinitionData].modelBinding) {
+      this[viewDefinitionData].modelBinding.listen = () => this.modelChanged();
+    }
+
+    this.modelChanged();
+  }
+
+  get eventBinding(){
+    return this[viewDefinitionData].eventBinding;
+  }
+  set eventBinding(value){
+    this[viewDefinitionData].eventBinding = value;
+  }
+
+  get template() {
+    return this[viewDefinitionData].template;
+  }
+  set template(value) {
+    this[viewDefinitionData].template = value;
+  }
+
+  get templateProperties() {
+    return this[viewDefinitionData].templateProperties;
+  }
+  set templateProperties(value) {
+    this[viewDefinitionData].templateProperties = value;
+  }
+}

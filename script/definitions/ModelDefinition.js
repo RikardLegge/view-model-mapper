@@ -106,25 +106,22 @@ class ModelDefinition extends EventSource(Definition) {
     return path.reduce((obj, key) => obj[key], this);
   }
 
-}
-Object.defineProperties(ModelDefinition.prototype, {
-  parent: {
-    get(){
-      const parentDescriptor = this[modelData].parentDescriptor;
-      return parentDescriptor
-        ? {model: parentDescriptor.model, key: parentDescriptor.key}
-        : {};
-    }
-  },
-  path: {
-    get(){
-      const parentDescriptor = this[modelData].parentDescriptor;
-      return parentDescriptor
-        ? [...parentDescriptor.model.path, parentDescriptor.key]
-        : [];
-    },
-    set(path){
-      this[modelData].parentDescriptor = path || {};
-    }
+  get parent(){
+    const parentDescriptor = this[modelData].parentDescriptor;
+    return parentDescriptor
+      ? {model: parentDescriptor.model, key: parentDescriptor.key}
+      : {};
   }
-});
+
+  get path(){
+    const parentDescriptor = this[modelData].parentDescriptor;
+    return parentDescriptor
+      ? [...parentDescriptor.model.path, parentDescriptor.key]
+      : [];
+  }
+  set path(path){
+    this[modelData].parentDescriptor = path || {};
+  }
+
+}
+

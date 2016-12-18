@@ -28,106 +28,95 @@ class ModelBinding {
       this.model.unListen(this.key, this[boundTriggerChange]);
   }
 
-}
-Object.defineProperties(ModelBinding.prototype, {
-  value: {
-    get(){
-      const value = this.model[this.key];
+  get value(){
+    const value = this.model[this.key];
 
-      let result;
-      if(this.middleware && this.middleware.get){
-        const {method, properties} = this.middleware.get;
-        const {execute, properties: defaultProperties} = method;
-        result = execute(value, properties || defaultProperties);
-      } else {
-        result = value;
-      }
-
-      return result;
-    },
-    set(value){
-      let result;
-      if(this.middleware && this.middleware.set){
-        const {method, properties} = this.middleware.set;
-        const {execute, properties: defaultProperties} = method;
-        result = execute(value, properties || defaultProperties);
-      } else {
-        result = value;
-      }
-
-      this.model[this.key] = result;
+    let result;
+    if(this.middleware && this.middleware.get){
+      const {method, properties} = this.middleware.get;
+      const {execute, properties: defaultProperties} = method;
+      result = execute(value, properties || defaultProperties);
+    } else {
+      result = value;
     }
-  },
 
-  key: {
-    get(){return this[modelBindingData].key},
-    set(value){
-      if(!this.model || !this.model.hasOwnProperty(value)){
-        console.log(`No the key does not exists on the model`, this.model, value);
-        return;
-      }
+    return result;
+  }
+  set value(value){
+    let result;
+    if(this.middleware && this.middleware.set){
+      const {method, properties} = this.middleware.set;
+      const {execute, properties: defaultProperties} = method;
+      result = execute(value, properties || defaultProperties);
+    } else {
+      result = value;
+    }
 
-      this[detachListeners]();
+    this.model[this.key] = result;
+  }
 
-      this[modelBindingData].key = value;
+  get key(){return this[modelBindingData].key}
+  set key(value){
+    if(!this.model || !this.model.hasOwnProperty(value)){
+      console.log(`No the key does not exists on the model`, this.model, value);
+      return;
+    }
 
+    this[detachListeners]();
+
+    this[modelBindingData].key = value;
+
+    this[attachListeners]();
+    this.trigger();
+  }
+
+  get model(){return this[modelBindingData].model}
+  set model(value){
+    this[detachListeners]();
+
+    this[modelBindingData].model = value;
+
+    if(value && !value.hasOwnProperty(this.key)){
+      this.key = null;
+      console.log(`The key was reset due to it not existing on the model`, value, this.key);
+      return;
+    }
+
+    this[attachListeners]();
+    this.trigger();
+  }
+
+  get middleware(){return this[modelBindingData].middleware}
+  set middleware(value){
+    this[modelBindingData].middleware = value;
+
+    this.trigger();
+  }
+
+  set properties(value){
+    this[detachListeners]();
+
+    Object.entries(value).forEach(([key, value]) => {
+      this[modelBindingData][key] = value;
+    });
+
+    this[attachListeners]();
+    this.trigger();
+  }
+
+  set listen(value){
+    this[detachListeners]();
+
+    if (value) {
+      this[modelBindingData].onChange = value;
       this[attachListeners]();
-      this.trigger();
-    }
-  },
-  model: {
-    get(){return this[modelBindingData].model},
-    set(value){
-      this[detachListeners]();
-
-      this[modelBindingData].model = value;
-
-      if(value && !value.hasOwnProperty(this.key)){
-        this.key = null;
-        console.log(`The key was reset due to it not existing on the model`, value, this.key);
-        return;
-      }
-
-      this[attachListeners]();
-      this.trigger();
-    }
-  },
-  middleware: {
-    get(){return this[modelBindingData].middleware},
-    set(value){
-      this[modelBindingData].middleware = value;
-
-      this.trigger();
-    }
-  },
-
-  properties: {
-    get(){return model},
-    set(value){
-      this[detachListeners]();
-
-      Object.entries(value).forEach(([key, value]) => {
-        this[modelBindingData][key] = value;
-      });
-
-      this[attachListeners]();
-      this.trigger();
-    }
-  },
-  listen: {
-    set(value){
-      this[detachListeners]();
-
-      if (value) {
-        this[modelBindingData].onChange = value;
-        this[attachListeners]();
-      }
-    }
-  },
-  path: {
-    get() {
-      const modelPath = this.model.path;
-      return [...modelPath, this.key];
     }
   }
-});
+
+  get path() {
+    const modelPath = this.model.path;
+    return [...modelPath, this.key];
+  }
+
+}
+

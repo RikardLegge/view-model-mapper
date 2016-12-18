@@ -11,10 +11,5 @@ class EventBinding {
     this.signalHandler.execute(this.model, this.signalHandler.properties);
   }
 
+  get path(){ return this.signalHandler.execute.__path;}
 }
-
-Object.defineProperties(EventBinding.prototype, {
-  path: {
-    get(){ return this.signalHandler.execute.__path;}
-  }
-});

@@ -11,9 +11,9 @@ function main() {
 
   applicationF.register('saveState', (model) => {
     // modulePersistor.save('example', exampleState, modules);
+    model.lastSaved = Date.now();
     modulePersistor.save('editor', editorState, modules);
 
-    model.lastSaved = Date.now();
   });
   applicationF.register('loadState', () => reload());
   applicationF.register('clearState', () => {
