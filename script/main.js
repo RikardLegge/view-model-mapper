@@ -20,30 +20,6 @@ function main() {
     // modulePersistor.clean('example');
     modulePersistor.clean('editor');
   });
-  applicationF.register('moveTarget', ({target:view, moveTarget:parent})=>{
-    const viewModule = modules.findByView(view);
-    const parentModule = modules.findByView(parent);
-
-    if(parent.ports.length === 0){
-      console.log(`Move target must have ports`);
-      return;
-    }
-
-    if(viewModule !== parentModule){
-      console.log('Moving views between modules will reset it"s model binding');
-
-      view.eventBinding && view.eventBinding.dispose();
-      view.modelBinding && view.modelBinding.dispose();
-
-      view.eventBinding = null;
-      view.modelBinding = null;
-
-      viewModule.detachView(view);
-      parentModule.attachView(view);
-    }
-
-    view.parentView = {view: parent, port: 0};
-  });
   applicationF.register('addView', ({type, editor:{moveTarget}, modelTag, modelKey, name = 'default'}) => {
     const module = modules.findByView(moveTarget);
 

@@ -37,6 +37,89 @@ class BindingEditor {
   }
 
   attach() {
+    document.addEventListener('keydown', (e)=>{
+      const target = this.editorModel.target;
+      if(target) {
+        switch (e.key) {
+          case 'ArrowLeft':
+          case 'ArrowUp':
+            move(target.element, -1);
+            break;
+          case 'ArrowRight':
+          case 'ArrowDown':
+            move(target.element, 1);
+            break;
+        }
+      }
+
+      function move(element, amt) {
+        const parent = element.parentNode;
+        const elements = [...parent.children];
+        let index = elements.indexOf(element);
+        index += amt;
+
+        if(amt > 0)
+          index += 1;
+
+        if (index < 0 || index >= element.length - 1)
+          return;
+
+        parent.insertBefore(element, elements[index]);
+      }
+    });
+    document.body.addEventListener('mousedown', (e)=>{
+      if(e.button === 2 || this.editorModel.moveTarget)
+        return;
+
+      const closest = this.findClosestViewBoundElement(e.target);
+      this.setMoveTarget(closest);
+    });
+    document.body.addEventListener('mouseup', (e)=>{
+      if(e.button === 2 || !this.editorModel.moveTarget)
+        return;
+
+      this.setMoveTarget(null);
+    });
+    document.body.addEventListener('mousemove', (e)=>{
+      if(e.button === 2)
+        return;
+
+      const view = this.editorModel.moveTarget;
+      if(!view)
+        return;
+
+      const closest = this.findClosestViewBoundElement(e.target, view);
+      if(!closest)
+        return;
+
+      const parent = closest.boundView;
+      if(view.parentView === parent)
+        return;
+
+      const viewModule = this.modules.findByView(view);
+      const parentModule = this.modules.findByView(parent);
+
+      if(parent.ports.length === 0){
+        console.log(`Move target must have ports`);
+        return;
+      }
+
+      if(viewModule !== parentModule){
+        console.log('Moving views between modules will reset it"s model binding');
+
+        view.eventBinding && view.eventBinding.dispose();
+        view.modelBinding && view.modelBinding.dispose();
+
+        view.eventBinding = null;
+        view.modelBinding = null;
+
+        viewModule.detachView(view);
+        parentModule.attachView(view);
+      }
+
+      view.parentView = {view: parent, port: 0};
+    });
+
     document.body.addEventListener('contextmenu', (e)=>{
       const closest = this.findClosestViewBoundElement(e.target);
 
@@ -88,9 +171,9 @@ class BindingEditor {
       : null;
   }
 
-  findClosestViewBoundElement(element) {
+  findClosestViewBoundElement(element, ignoredView) {
     while (element) {
-      if (element.boundView) {
+      if (element.boundView && element.boundView !== ignoredView) {
         return element;
       } else {
         element = element.parentNode;

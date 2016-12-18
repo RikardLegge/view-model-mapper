@@ -103,9 +103,6 @@ const defaultEditorState = {
     {id: 46, index: 5, path: ['default', 'button'], parentView: {id: 68, port: 0}},
     {id: 47, index: 0, path: ['default', 'label'], parentView: {id: 46, port: 0}},
 
-    {id: 51, index: 5, path: ['default', 'button'], parentView: {id: 68, port: 0}},
-    {id: 52, index: 0, path: ['default', 'label'], parentView: {id: 51, port: 0}},
-
     {id: 53, index: 3, path: ['default', 'group'], parentView: {id: 11, port: 0}},
     {id: 54, index: 0, path: ['default', 'label'], parentView: {id: 53, port: 0}},
     {id: 55, index: 1, path: ['default', 'label'], parentView: {id: 53, port: 0}},
@@ -128,7 +125,6 @@ const defaultEditorState = {
     {view: {id: 33}, model: {id: 4, path: 'save'}},
     {view: {id: 35}, model: {id: 4, path: 'load'}},
     {view: {id: 37}, model: {id: 4, path: 'clear'}},
-    {view: {id: 52}, model: {id: 4, path: 'move'}},
     {view: {id: 47}, model: {id: 4, path: 'delete'}},
     {view: {id: 29}, model: {id: 3, path: 'suggestions'}, middleware: {get: {id: 2}}},
 
@@ -161,7 +157,6 @@ const defaultEditorState = {
     {view: {id: 36}, model: {id: 3}, signalHandler: {path: ['application', 'clearState']}},
     {view: {id: 44}, model: {id: 5}, signalHandler: {path: ['application', 'addView']}},
     {view: {id: 46}, model: {id: 3}, signalHandler: {path: ['application', 'removeView']}},
-    {view: {id: 51}, model: {id: 3}, signalHandler: {path: ['application', 'moveTarget']}},
 
     {view: {id: 30}, model: {id: 3}, signalHandler: {path: ['default', 'triggerEvent'], properties: {target: 'applyModelText'}}},
     {view: {id: 31}, model: {id: 3}, signalHandler: {path: ['default', 'triggerEvent'], properties: {target: 'applyEventText'}}},
