@@ -122,8 +122,64 @@ class ModelDefinition extends EventSource(Definition) {
   set path(path){
     this[modelData].parentDescriptor = path || {};
   }
-
 }
+
+ModuleParser.add('modelAliases', ({}, {modules, parsed: {models, views}, unresolved: {unresolvedModelAliases: unresolvedAliases}})=>{
+  if(!models || !views)
+    return false;
+
+  unresolvedAliases.forEach(({model, alias:{key, value:{type, id, moduleId}}}) => {
+    switch (type) {
+      case 'model':
+        const childModel = models.findById(id);
+        assert(childModel, `No model found when resolving aliases [${id}]`);
+        model.addValueProperty(key, childModel);
+        break;
+
+      case 'view':
+        let view;
+        if(moduleId) {
+          const module = modules.find(module=>module.header.id === moduleId);
+          assert(module, `No module found ${moduleId}`);
+          view = module.views.findById(id);
+        } else {
+          view = views.findById(id);
+        }
+
+        assert(view, `No view found when resolving aliases [${id}]`);
+        model.addValueProperty(key, view);
+        break;
+
+      default:
+        console.warn(`No alias resolver available for "${type}". key = "${key}"`);
+        break;
+    }
+  });
+});
+
+ModuleParser.add('models', ({models: obj})=> {
+  const modelsSet = {};
+  const unresolvedModelAliases = [];
+
+  obj.forEach(({id, name: tag, properties, aliases = [], middleware = []}) => {
+    const model = new ModelDefinition(properties);
+
+    middleware.forEach(({key, middleware:{path, properties}}) => {
+      const method = {execute: ModuleParser.reducePath(Functions, path), properties};
+      model.addMiddleware(key, method);
+    });
+
+    const meta = {id, tag, model};
+    model.meta = meta;
+
+    modelsSet[id] = meta;
+    unresolvedModelAliases.push(...aliases.map(alias => ({model, alias})));
+  });
+
+  const models = new ModelManager(Object.values(modelsSet));
+
+  return {data: models, unresolved: {unresolvedModelAliases}};
+});
 
 ModuleSerializer.add('models', ({models, module: thisModule}, {modules})=>{
   return models.getList()

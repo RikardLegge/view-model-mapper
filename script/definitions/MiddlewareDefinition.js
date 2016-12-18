@@ -6,6 +6,23 @@ class MiddlewareDefinition extends Definition {
   }
 }
 
+ModuleParser.add('middleware', ({middleware:obj})=>{
+  const middlewareSet = {};
+
+  obj.forEach(({id, path, properties})=>{
+    const middleware = new MiddlewareDefinition();
+    middleware.execute = ModuleParser.reducePath(Functions, path);
+    middleware.properties = properties;
+    const meta = {id, middleware};
+
+    middlewareSet[id] = meta;
+    middleware.meta = meta;
+  });
+
+  const middleware = new MiddlewareManager(Object.values(middlewareSet));
+  return {data: middleware};
+});
+
 ModuleSerializer.add('middleware', ({middleware})=>{
   return middleware.data.map(({id, middleware}) => {
     const properties = middleware.properties;

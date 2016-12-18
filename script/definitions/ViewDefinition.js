@@ -103,6 +103,37 @@ class ViewDefinition extends ComponentManager(Definition) {
   }
 }
 
+ModuleParser.add('views', ({views: obj})=>{
+  const viewsSet = {};
+  const unattachedViews = [];
+
+  obj.sort((a, b) => a.index - b.index).forEach(({
+    path, properties = {}, id,
+    parentView: parentViewDef
+  }) => {
+    properties.name = properties.name === undefined ? 'default' : properties.name;
+
+    const viewFactory = ModuleParser.reducePath(UI, path);
+    const view = viewFactory.create({properties});
+
+    const meta = {id, view};
+    view.meta = meta;
+
+    viewsSet[id] = meta;
+
+    if (parentViewDef)
+      unattachedViews.push({view, id: parentViewDef.id, port: parentViewDef.port});
+  });
+
+  unattachedViews.forEach(({view, id, port}) => {
+    assert(viewsSet[id].view, `No view found when attaching view to parent ${id}`, view, port);
+    view.parentView = {view: viewsSet[id].view, port};
+  });
+
+  const views = new ViewManager(Object.values(viewsSet));
+  return {data: views};
+});
+
 ModuleSerializer.add('views', ({views})=>{
   return views.data.map(({id, view}) => {
     const properties = view.templateProperties;

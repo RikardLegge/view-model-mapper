@@ -120,6 +120,58 @@ class ModelBinding {
 
 }
 
+ModuleParser.add('moduleBindingMiddleware', ({}, {parsed: {middleware}, unresolved: {unresolvedModelBindingMiddleware}})=>{
+  if(!middleware || !unresolvedModelBindingMiddleware)
+    return false;
+
+  unresolvedModelBindingMiddleware.forEach(({modelBinding, middleware: middlewareDef})=>{
+    const middleware = {get:null, set: null};
+    const get = middlewareDef.get;
+    const set = middlewareDef.set;
+
+    assert(get || set, `A get and or a set method is required for a model binding to be resolved`);
+
+    if(get)
+      middleware.get = createMethod(get);
+
+    if(set)
+      middleware.set = createMethod(set);
+
+    modelBinding.middleware = middleware
+  });
+
+  function createMethod({id, properties}){
+    const method = middleware.findById(id);
+
+    assert(method, `No middleware method found for id`, id);
+
+    return {method: method, properties: properties};
+  }
+});
+
+ModuleParser.add('modelBindings', ({modelBindings: obj}, {parsed:{models, views}})=>{
+  if(!models || !views)
+    return false;
+
+  const unresolvedModelBindingMiddleware = [];
+
+  obj.forEach(({view:{id: viewId}, model:{id: modelId, path: key}, middleware}) => {
+    const model = models.findById(modelId);
+    const view = views.findById(viewId);
+
+    assert(view, `No view found when parsing model bindings`);
+    assert(model, `Model "${modelId}" not connected using view/model binding`, view, key);
+
+    const modelBinding = new ModelBinding();
+    modelBinding.properties = {model, key};
+    view.modelBinding = modelBinding;
+
+    if(middleware)
+      unresolvedModelBindingMiddleware.push({modelBinding, middleware});
+  });
+
+  return {unresolved: {unresolvedModelBindingMiddleware}};
+});
 
 ModuleSerializer.add('modelBindings', ({views})=>{
   return views.getList()
@@ -153,8 +205,6 @@ ModuleSerializer.add('modelBindings', ({views})=>{
       return {view: {id: viewId}, model: {id: modelId, path}, middleware};
     });
 });
-
-
 
 ViewDefinition.addComponent({
   name: 'modelBinding',
