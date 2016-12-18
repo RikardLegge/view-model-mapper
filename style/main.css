@@ -2,7 +2,9 @@ html, body {
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 0; }
+  padding: 0;
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 14px; }
 
 .editor__target {
   box-shadow: inset 0 0 0 4px #660F57; }
@@ -15,20 +17,25 @@ html, body {
   display: inline-block; }
 .defaultButton__input {
   display: none; }
+.defaultLabel__content {
+  display: inline-block; }
 .defaultButton__container {
   display: inline-block;
   user-select: none; }
 .defaultButton__content {
-  padding: 5px;
+  padding: 10px;
   margin: 3px;
-  border: 3px solid blue; }
+  background: #333333;
+  color: white;
+  border-radius: 2px; }
 .defaultButton__hitbox:active .defaultButton__content {
   background: green;
   color: white; }
 .defaultGroup__container {
   margin: 5px;
   padding: 5px;
-  border: 1px solid gray; }
+  border: 1px solid lightgray;
+  border-radius: 2px; }
 
 .debugLogGroup__container {
   border: 1px solid red; }
@@ -36,22 +43,27 @@ html, body {
 .stateActionsGroup__container {
   border: 1px solid blue; }
 
+.bindingEditorSuggestionsLabel__content {
+  border: 2px solid black;
+  border-radius: 2px;
+  background: white;
+  padding: 10px; }
+.bindingEditorSuggestionsGroup__container {
+  position: relative;
+  padding: 5px;
+  height: calc( 1em + 20px + 4px + 10px ); }
+.bindingEditorSuggestionsGroup__content {
+  z-index: 110; }
 .bindingEditorGroup__container {
   background: white;
-  border: 4px solid lightgray;
+  border: 4px solid black;
+  border-radius: 2px;
   display: none;
   width: 400px;
-  padding: 10px; }
+  padding: 10px;
+  z-index: 1000; }
 .bindingEditorGroup--show {
   display: block; }
-.bindingEditorLabel {
-  padding: 0 40px;
-  width: calc(100% - 80px);
-  overflow: hidden;
-  font-family: monospace;
-  text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis; }
 .bindingEditorText__input {
   width: 100%;
   line-height: 18px;
@@ -69,3 +81,39 @@ html, body {
 .callstackLabel {
   width: 100%;
   font-family: monospace; }
+
+.savebarGroup__container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: orange;
+  border-top: 4px solid black; }
+.savebarGroup__content {
+  padding: 10px; }
+  .savebarGroup__content .defaultLabel__content {
+    height: 20px; }
+.savebarButton__content {
+  display: inline-block; }
+.savebarButton__input {
+  display: none; }
+.savebarButton__container {
+  display: inline-block;
+  margin: 5px;
+  width: 60px;
+  border-bottom: 2px solid black; }
+.savebarButton__content {
+  width: 100%;
+  text-align: center; }
+
+.saveButtonsGroup__container {
+  width: 100%; }
+.saveButtonsGroup__content {
+  margin: auto; }
+
+.lastSavedGroup__container {
+  position: absolute;
+  right: 0;
+  bottom: 0; }
+
+.saveBarButtonsGroup__content {
+  text-align: center; }

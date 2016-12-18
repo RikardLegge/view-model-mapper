@@ -101,6 +101,17 @@ class ViewDefinition extends ComponentManager(Definition) {
   get ports(){
     return this[viewDefinitionData].ports;
   }
+
+  isDescendantOf(parent) {
+    let child = this.element;
+    while (child != null) {
+      if (child.boundView == parent) {
+        return true;
+      }
+      child = child.parentNode;
+    }
+    return false;
+  }
 }
 
 ModuleParser.add('views', ({views: obj})=>{

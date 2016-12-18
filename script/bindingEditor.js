@@ -96,6 +96,9 @@ class BindingEditor {
       if(view.parentView === parent)
         return;
 
+      if(parent.isDescendantOf(view))
+        return;
+
       const viewModule = this.modules.findByView(view);
       const parentModule = this.modules.findByView(parent);
 
@@ -118,6 +121,7 @@ class BindingEditor {
       }
 
       view.parentView = {view: parent, port: 0};
+      e.preventDefault();
     });
 
     document.body.addEventListener('contextmenu', (e)=>{

@@ -55,4 +55,4 @@ class Module {
 }
 
 ModuleSerializer.add('header', ({header})=>header);
-ModuleParser.add('header', ({header})=>header);
+ModuleParser.add('header', ({header})=>({data: header}));

@@ -20,28 +20,42 @@ helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
     if(element){
       view.show();
       const viewRect = view.element.getBoundingClientRect();
+      const bodyRect = document.body.getBoundingClientRect();
       let center;
 
-      if(isDescendant(view.element, element)) {
-        console.log('inside') ;
-        const bodyRect = document.body.getBoundingClientRect();
+      if(targetView.isDescendantOf(view)) {
         center = {x: bodyRect.width/2, y: bodyRect.height/2};
 
-        center.y -= viewRect.height/2;
+        center.y = 0;
         center.x -= viewRect.width/2;
       } else {
         const targetRect = element.getBoundingClientRect();
         center = {
-          x: targetRect.left + targetRect.width / 2,
-          y: targetRect.top + targetRect.height / 2
+          x: null,
+          y: null
         };
 
-        center.y += targetRect.height / 2 + 20;
-        center.x -= viewRect.width / 2;
+        if(targetRect.y < bodyRect.height/2) {
+          center.y = targetRect.top + targetRect.height + 20;
+        } else {
+          center.y = targetRect.top - viewRect.height - 20;
+
+        }
+        center.x = targetRect.left + targetRect.width / 2 - viewRect.width / 2;
+
+        if(center.x < 20)
+          center.x = 20;
+
+        if(center.x + viewRect.width + 20 > bodyRect.width)
+          center.x = bodyRect.width - 20 - viewRect.width;
+
+        if(center.y < 20)
+          center.y = 20;
+
+        if(center.y + viewRect.height + 20 > bodyRect.height)
+          center.y = bodyRect.height - 20 - viewRect.height;
       }
 
-      if(center.x < 20)
-        center.x = 20;
 
       view.setPosition(center);
       return;
@@ -49,16 +63,6 @@ helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
   }
 
   view.hide();
-
-  function isDescendant(parent, child) {
-    while (child != null) {
-      if (child == parent) {
-        return true;
-      }
-      child = child.parentNode;
-    }
-    return false;
-  }
 });
 
 helloworldF.register('rewriteNull', (value, properties) =>

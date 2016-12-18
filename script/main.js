@@ -20,15 +20,15 @@ function main() {
     // modulePersistor.clean('example');
     modulePersistor.clean('editor');
   });
-  applicationF.register('addView', ({type, editor:{moveTarget}, modelTag, modelKey, name = 'default'}) => {
-    const module = modules.findByView(moveTarget);
+  applicationF.register('addView', ({type, editor:{target}, modelTag, modelKey, name = 'default'}) => {
+    const module = modules.findByView(target);
 
     if(!module){
       console.log(`A view must be provided`);
       return;
     }
 
-    const parentView = moveTarget;
+    const parentView = target;
     const model = module.models.findByTag(modelTag);
 
     if(!parentView)
@@ -52,7 +52,7 @@ function main() {
       const module = modules.findByView(target);
 
       const childViews = target.remove();
-      childViews.forEach(child=>module.views.remove(child));
+      childViews.forEach(child=>module.views.remove(child.meta));
 
       module.detachView(target);
 
