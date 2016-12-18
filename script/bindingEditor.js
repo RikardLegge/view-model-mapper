@@ -38,8 +38,9 @@ class BindingEditor {
 
   attach() {
     document.body.addEventListener('contextmenu', (e)=>{
-      e.preventDefault();
       const closest = this.findClosestViewBoundElement(e.target);
+
+      e.preventDefault();
 
       if(e.shiftKey) {
         this.setMoveTarget(closest);

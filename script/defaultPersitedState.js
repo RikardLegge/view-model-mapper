@@ -35,7 +35,7 @@ const defaultEditorState = {
         create: 'Create view',
         delete: 'Delete',
         type: 'Type',
-        model: 'Model',
+        model: 'ModelDefinition',
         property: 'Property',
       }
     },

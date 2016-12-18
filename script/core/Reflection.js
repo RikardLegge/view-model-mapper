@@ -6,7 +6,7 @@ class ReflectModel {
       if (deep) {
         path = [...root, {model, key}];
 
-        if (value instanceof Model) {
+        if (value instanceof ModelDefinition) {
           paths.push(...ReflectModel.getPaths(value, path))
         }
       } else {

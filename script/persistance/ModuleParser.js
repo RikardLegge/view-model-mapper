@@ -110,7 +110,7 @@ class ModuleParser {
     const unresolvedModelAliases = [];
 
     obj.forEach(({id, name: tag, properties, aliases = [], middleware = []}) => {
-      const model = new Model(properties);
+      const model = new ModelDefinition(properties);
 
       middleware.forEach(({key, middleware:{path, properties}}) => {
         const method = {execute: this.reducePath(Functions, path), properties};

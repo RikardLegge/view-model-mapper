@@ -48,17 +48,18 @@ helloworldF.register('positionAtTargetView', (view, model, {target}) =>{
 
   view.setPosition({x: 0, y: 0});
   view.hide();
+
+  function isDescendant(parent, child) {
+    while (child != null) {
+      if (child == parent) {
+        return true;
+      }
+      child = child.parentNode;
+    }
+    return false;
+  }
 });
 
 helloworldF.register('rewriteNull', (value, properties) =>
   value !== null ? value : properties['default']);
 
-function isDescendant(parent, child) {
-  while (child != null) {
-    if (child == parent) {
-      return true;
-    }
-    child = child.parentNode;
-  }
-  return false;
-}

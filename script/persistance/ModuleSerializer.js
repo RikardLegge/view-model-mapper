@@ -88,7 +88,7 @@ class ModuleSerializer {
         }, []);
         const properties = Object.entries(model).reduce((properties, [key, value]) => {
           if (ignoredProperties.indexOf(key) === -1) {
-            if (value instanceof Model) {
+            if (value instanceof ModelDefinition) {
               aliases.push({key, value: {type: 'model', id: value.meta.id}});
             } else if (value instanceof ViewBinding) {
               const meta = value.meta;

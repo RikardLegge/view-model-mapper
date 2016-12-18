@@ -1,0 +1,2 @@
+const Functions = new Registry();
+
