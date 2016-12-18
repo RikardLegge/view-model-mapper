@@ -13,3 +13,13 @@ class EventBinding {
 
   get path(){ return this.signalHandler.execute.__path;}
 }
+
+ViewDefinition.addComponent({
+  name: 'eventBinding',
+  methods: {
+    viewSignal: function() {
+      const binding = this.eventBinding;
+      binding && binding.trigger();
+    }
+  },
+});

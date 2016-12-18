@@ -1,11 +1,13 @@
 const viewDefinitionData = Symbol(`viewBindingData`);
-class ViewDefinition extends Definition {
+
+class ViewDefinition extends ComponentManager(Definition) {
 
   constructor({template, properties}) {
     super();
-    this[viewDefinitionData] = {};
-    this[viewDefinitionData].template = template;
-    this[viewDefinitionData].templateProperties = properties;
+
+    this[viewDefinitionData] = { };
+    this.template = template;
+    this.templateProperties = properties;
   }
 
   replaceOldElement(element) {
@@ -67,27 +69,6 @@ class ViewDefinition extends Definition {
     this.modelChanged();
   }
 
-  viewSignal() {
-    const binding = this.eventBinding;
-    binding && binding.trigger();
-  }
-
-  viewChanged() {
-    const binding = this.modelBinding;
-    binding && (binding.value = this.getValue());
-  }
-
-  modelChanged() {
-    const binding = this.modelBinding;
-    const mutator = this.viewMutator;
-    const setValue = this.setValue;
-
-    if (binding) {
-      setValue(binding.value);
-      mutator && mutator.execute(this, binding.model, mutator.properties);
-    }
-  }
-
   getPortIndex(port) {
     return this[viewDefinitionData].ports.indexOf(port);
   }
@@ -119,53 +100,5 @@ class ViewDefinition extends Definition {
 
   get ports(){
     return this[viewDefinitionData].ports;
-  }
-
-  get viewMutator(){
-    return this[viewDefinitionData].viewMutator;
-  }
-  set viewMutator(value){
-    this[viewDefinitionData].viewMutator = value;
-
-    if (this.viewMutator && this.modelBinding)
-      this.viewMutator.execute(this, this.modelBinding.model, this.viewMutator.properties);
-  }
-
-  get modelBinding(){
-    return this[viewDefinitionData].modelBinding;
-  }
-  set modelBinding(value){
-    if (this.modelBinding) {
-      this.modelBinding.listen = false;
-    }
-
-    this[viewDefinitionData].modelBinding = value;
-
-    if(this[viewDefinitionData].modelBinding) {
-      this[viewDefinitionData].modelBinding.listen = () => this.modelChanged();
-    }
-
-    this.modelChanged();
-  }
-
-  get eventBinding(){
-    return this[viewDefinitionData].eventBinding;
-  }
-  set eventBinding(value){
-    this[viewDefinitionData].eventBinding = value;
-  }
-
-  get template() {
-    return this[viewDefinitionData].template;
-  }
-  set template(value) {
-    this[viewDefinitionData].template = value;
-  }
-
-  get templateProperties() {
-    return this[viewDefinitionData].templateProperties;
-  }
-  set templateProperties(value) {
-    this[viewDefinitionData].templateProperties = value;
   }
 }

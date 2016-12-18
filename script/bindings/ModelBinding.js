@@ -120,3 +120,39 @@ class ModelBinding {
 
 }
 
+ViewDefinition.addComponent({
+  name: 'modelBinding',
+  set: function(data, value) {
+    if (data.modelBinding) {
+      data.modelBinding.listen = false;
+    }
+
+    data.modelBinding = value;
+
+    if(data.modelBinding) {
+      data.modelBinding.listen = () => this.modelChanged();
+    }
+
+    this.modelChanged();
+  },
+  methods: {
+    viewChanged: function() {
+      const binding = this.modelBinding;
+
+      if (binding)
+        binding.value = this.getValue();
+    },
+    modelChanged: function() {
+      const binding = this.modelBinding;
+      const mutator = this.viewMutator;
+      const setValue = this.setValue;
+
+      if (binding) {
+        setValue(binding.value);
+
+        if(mutator)
+          mutator.execute(this, binding.model, mutator.properties);
+      }
+    }
+  }
+});
