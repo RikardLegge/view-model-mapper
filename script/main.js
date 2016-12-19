@@ -2,12 +2,13 @@ const applicationF = new Registry('application', Functions);
 
 let exampleState;
 let editorState;
+const modulePersistor = new LocalStoragePersistor();
+const bindingEditor = new BindingEditor();
+
 function main() {
   const modules = new ModuleCollection();
-  const bindingEditor = new BindingEditor();
   bindingEditor.attach();
 
-  const modulePersistor = new LocalStoragePersistor();
 
   applicationF.register('saveState', (model) => {
     // modulePersistor.save('example', exampleState, modules);
@@ -20,7 +21,8 @@ function main() {
     // modulePersistor.clean('example');
     modulePersistor.clean('editor');
   });
-  applicationF.register('addView', ({type, editor:{target}, modelTag, modelKey, name = 'default'}) => {
+  applicationF.register('addView', ({type, editor, modelTag, modelKey, name = 'default'}) => {
+    const target = editor.target;
     const module = modules.findByView(target);
 
     if(!module){
@@ -45,6 +47,7 @@ function main() {
     }
 
     module.registerNewView(view);
+    editor.target = view;
   });
   applicationF.register('removeView', (model) => {
     const target = model.target;

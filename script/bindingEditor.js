@@ -1,4 +1,10 @@
 class BindingEditorStyler {
+  clear(name){
+    const cls = `editor__${name}`;
+    document
+      .querySelectorAll(`.${cls}`)
+      .forEach(e=>e.classList.remove(cls))
+  }
   addStyle(view, name) {
     view.element.classList.add(`editor__${name}`);
   }
@@ -10,7 +16,7 @@ class BindingEditorStyler {
 
 class BindingEditor {
   constructor() {
-    const editors = [EventBindingEditor, ModelBindingEditor, ViewBindingEditor];
+    const editors = [ConsoleEditor];
 
     this.editorModel = null;
     this.style = new BindingEditorStyler();
@@ -38,6 +44,9 @@ class BindingEditor {
 
   attach() {
     document.addEventListener('keydown', (e)=>{
+      if(!this.editorModel.isEnabled)
+        return;
+
       const target = this.editorModel.target;
       if(target) {
         switch (e.key) {
@@ -68,6 +77,9 @@ class BindingEditor {
       }
     });
     document.body.addEventListener('mousedown', (e)=>{
+      if(!this.editorModel.isEnabled || false)
+        return;
+
       if(e.button === 2 || this.editorModel.moveTarget)
         return;
 
@@ -75,12 +87,18 @@ class BindingEditor {
       this.setMoveTarget(closest);
     });
     document.body.addEventListener('mouseup', (e)=>{
+      if(!this.editorModel.isEnabled || false)
+        return;
+
       if(e.button === 2 || !this.editorModel.moveTarget)
         return;
 
       this.setMoveTarget(null);
     });
     document.body.addEventListener('mousemove', (e)=>{
+      if(!this.editorModel.isEnabled || false)
+        return;
+
       if(e.button === 2)
         return;
 
@@ -125,6 +143,9 @@ class BindingEditor {
     });
 
     document.body.addEventListener('contextmenu', (e)=>{
+      if(!this.editorModel.isEnabled)
+        return;
+
       const closest = this.findClosestViewBoundElement(e.target);
 
       e.preventDefault();
@@ -160,6 +181,7 @@ class BindingEditor {
 
   applyTargetStyle(target, name){
     if(target){
+      this.style.clear(name);
       this.style.addStyle(target, name);
     }
   }
@@ -196,18 +218,18 @@ class BindingEditor {
       const viewMeta = target.meta;
       const eventBindingModelMeta = eventBinding ? eventBinding.model.meta : {};
 
-      editorModel.viewProperties = `id: ` + viewMeta.id;
-      editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
-      editorModel.modelText = modelBinding ? getModelPathName(modelBinding) : null;
-      editorModel.eventModelIdText = eventBindingModelMeta.tag || null;
-      editorModel.templateText = target.templateProperties.name;
+      // editorModel.viewProperties = `id: ` + viewMeta.id;
+      // editorModel.eventText = eventBinding ? eventBinding.path.join('.') : null;
+      // editorModel.modelText = modelBinding ? getModelPathName(modelBinding) : null;
+      // editorModel.eventModelIdText = eventBindingModelMeta.tag || null;
+      // editorModel.templateText = target.templateProperties.name;
     } else {
-      editorModel.suggestions = [];
-      editorModel.viewProperties = null;
-      editorModel.eventText = null;
-      editorModel.modelText = null;
-      editorModel.eventModelIdText = null;
-      editorModel.templateText = null;
+      // editorModel.suggestions = [];
+      // editorModel.viewProperties = null;
+      // editorModel.eventText = null;
+      // editorModel.modelText = null;
+      // editorModel.eventModelIdText = null;
+      // editorModel.templateText = null;
     }
 
     function getModelPathName(binding) {
@@ -471,4 +493,269 @@ class ModelBindingEditor {
       ? module.models.groupByTag()
       : {};
   }
+}
+
+class ConsoleEditor {
+
+  constructor(){ }
+
+  setEditorModel(editorModel){
+    this.editorModel = editorModel;
+    this.editorModel.listen('target', ()=>this.render());
+  }
+
+  render(){
+    console.clear();
+    const target = this.editorModel.target;
+
+    if(target){
+      this.renderViewDefinition(target);
+    } else {
+      delete window.view;
+      delete window.models;
+      delete window.ui;
+    }
+  }
+
+  renderBasic(def){
+    console.log(`View Id:`, def.meta.id, 'Type:', 'UI.'+def.__path.join('.'));
+    console.log(`Element:`, def.element);
+  }
+
+  generateModules() {
+    return this.modules.modules.reduce((modules, module, index)=>{
+      const key = module.header.tag || `unknown${index}`;
+
+      modules[key] = this.generateModels(module);
+
+      return modules;
+    }, Null({}));
+  }
+
+  renderBindings(def){
+    const modelBinding = def.modelBinding;
+    if(modelBinding){
+      console.log("ModelBinding: ", {
+        model: getTag(),
+        key: getKey(),
+        get $value(){
+          return modelBinding.value;
+        },
+        set $value(value){
+          modelBinding.value = value;
+        },
+        get $path(){
+          return `${getTag()}.${getKey()}`
+        },
+        set $path(val){
+          view.set.model(val);
+        }});
+
+      function getKey(){
+        return modelBinding.key || 'NONE';
+      }
+
+      function getTag(){
+        return modelBinding.model
+          ? def.modelBinding.model.meta.tag
+          : 'NONE';
+      }
+    }
+
+    const eventBinding = def.eventBinding;
+    if(eventBinding){
+      const tag = eventBinding.model
+        ? def.eventBinding.model.meta.tag
+        : 'NONE';
+      const key = eventBinding.signalHandler
+        ? eventBinding.signalHandler.execute.__path.join('.')
+        : 'NONE';
+      console.log("EventBinding: ", {model: tag, signal: key, get $path(){return key}, set $path(value){}});
+    }
+  }
+
+  generateModels(module){
+    const moduleDef = module.models.data.reduce((models, model)=>{
+      const original = model.model;
+      const tag = model.tag;
+      const modelDef = Object.entries(original).reduce((model, [key, value])=>{
+        if(original.hasOwnProperty(key)){
+          Object.defineProperty(model, key, {
+            get(){
+              return `${tag}.${key}|=>${value}`
+            },
+            set(value){
+              if(original.hasOwnProperty(key)) {
+                original[key] = value;
+              }
+            }
+          });
+        }
+        return model;
+      }, Null({}));
+      modelDef.$define = prop(([key])=>{
+        if(!original.hasOwnProperty(key)){
+          original.addValueProperty(key, null);
+        }
+
+        return prop(([value])=>{
+          original[key] = value;
+        });
+      });
+      models[tag] = modelDef;
+      return models
+    }, Null({}));
+
+    const saveModule = ()=>{
+      modulePersistor.save(module.header.tag, module, this.modules);
+    };
+
+    const loadModule = ()=>{
+      const modules = this.modules.modules;
+      const tag = module.header.tag;
+      module.unload();
+
+      const index = modules.indexOf(module);
+      if(index >= 0)
+        modules.splice(index, 1);
+
+      const loadedModule = modulePersistor.load(tag, modules);
+      modules.push(loadedModule);
+      module = null;
+
+      if(tag === 'editor') {
+        const model = loadedModule.models.findByTag(tag);
+        bindingEditor.setModule(model, this.modules);
+      }
+    };
+
+    moduleDef.$save = saveModule;
+    moduleDef.$load = loadModule;
+    moduleDef.$head = module.header;
+    return moduleDef;
+  }
+
+  generateUI(){
+    return Null({
+      checkbox: 'checkbox',
+      group: 'group'
+    });
+  }
+
+  generateView(def) {
+    const editorModel = this.editorModel;
+    const target = editorModel.target;
+
+    const setValues = Null({
+      event(list, ...values){
+        list = [].concat(list);
+        const type = list.join('') + values.join('');
+      },
+      model: prop(keys => {
+        if(keys.length === 0) {
+          if(target.modelBinding)
+            target.modelBinding = null;
+        } else if(keys.length === 1) {
+          const property = keys[0];
+          if(!target.modelBinding || !target.modelBinding.model)
+            return console.warn(`A single parameter is treated as a property, please specify a full model property path`);
+
+          if(!target.modelBinding.model.hasOwnProperty(property))
+            return console.warn(`The property ${property} does not exist on the model`);
+
+          target.modelBinding.key = property;
+        } else if(keys.length === 2) {
+          const module = this.modules.findByView(target);
+          const tagOrId = keys[0];
+          const property = keys[1];
+          const binding = target.modelBinding || new ModelBinding();
+
+          const model =
+            module.models.findByTag(tagOrId) ||
+            module.models.findById(tagOrId | 0);
+
+          if(!model.hasOwnProperty(property))
+            return console.warn(`The property ${property} does not exist on the model`);
+
+          binding.properties = {model, key: property};
+
+          if(!target.modelBinding)
+            target.modelBinding = binding;
+        }
+      }),
+      ['class']: prop(([key]) => {
+        setTimeout(()=> {
+          target.templateProperties.name = key;
+          target.redrawElement();
+          this.render();
+        },0);
+      })
+    });
+
+    return Null({
+      ['delete']: () => {
+        applicationF.removeView(editorModel)
+      },
+      add(list, ...values){
+        list = [].concat(list);
+        const type = list.join('') + values.join('');
+        applicationF.addView({type, editor: editorModel});
+      },
+      set: setValues,
+
+      get parent(){
+        editorModel.target = target.parentView;
+      },
+      get children(){
+        return target.children;
+      }
+    });
+  }
+
+  renderViewDefinition(def){
+    this.renderBasic(def);
+    window.models = this.generateModels(this.modules.findByView(def));
+    window.ui = this.generateUI();
+    window.view = this.generateView(def);
+    window.modules = this.generateModules();
+    this.renderBindings(def);
+  }
+
+  setModules(modules){
+    this.modules = modules;
+    window.modules = this.generateModules();
+  }
+}
+
+function prop(func){
+  return function(...param){
+    const values = [];
+    addValue(param);
+
+    setTimeout(()=>{
+      func(values);
+    }, 0);
+
+    return next;
+
+    function next(...param){
+      addValue(param);
+      return next;
+    }
+
+    function addValue(param){
+      let [list, ...rest] = param;
+      list = [].concat(list);
+
+      let value = list.join('') + rest.join('');
+      value = value.split('|')[0];
+
+      values.push(...value.split('.'));
+    }
+  }
+}
+
+function Null(obj={}){
+  obj.__proto__ = null;
+  return obj;
 }

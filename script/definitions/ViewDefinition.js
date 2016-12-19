@@ -98,6 +98,14 @@ class ViewDefinition extends ComponentManager(Definition) {
     return this[viewDefinitionData].element;
   }
 
+  get children(){
+    return this.ports.map(port=>{
+      return [...port.children].map(child=>{
+        return child.boundView;
+      })
+    });
+  }
+
   get ports(){
     return this[viewDefinitionData].ports;
   }
