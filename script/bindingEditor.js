@@ -208,6 +208,7 @@ class BindingEditor {
   }
 
   propagateTargetChange() {
+    return false;
     const editorModel = this.editorModel;
     const target = editorModel.target;
 
@@ -534,43 +535,49 @@ class ConsoleEditor {
 
   renderBindings(def){
     const modelBinding = def.modelBinding;
-    if(modelBinding){
-      console.log("ModelBinding: ", {
-        model: getTag(),
-        key: getKey(),
-        get $value(){
-          return modelBinding.value;
-        },
-        set $value(value){
-          modelBinding.value = value;
-        },
-        get $path(){
-          return `${getTag()}.${getKey()}`
-        },
-        set $path(val){
-          view.set.model(val);
-        }});
+    console.log("ModelBinding: ", {
+      model: getTag(modelBinding),
+      key: getKey(),
+      get $value(){
+        return modelBinding.value;
+      },
+      set $value(value){
+        modelBinding.value = value;
+      },
+      get $path(){
+        return `${getTag(modelBinding)}.${getKey()}`
+      },
+      set $path(val){
+        view.set.model(val);
+    }});
 
-      function getKey(){
-        return modelBinding.key || 'NONE';
-      }
-
-      function getTag(){
-        return modelBinding.model
-          ? def.modelBinding.model.meta.tag
-          : 'NONE';
-      }
-    }
 
     const eventBinding = def.eventBinding;
-    if(eventBinding){
-      const tag = eventBinding.model
-        ? def.eventBinding.model.meta.tag
+    console.log("EventBinding: ", {
+      model: getTag(eventBinding),
+      signal: getSignal(),
+      get $path(){
+        return getSignal()
+      },
+      set $path(value){
+        view.set.event(value);
+      }});
+
+    function getKey(){
+      return modelBinding
+        ? modelBinding.key
         : 'NONE';
-      const key = eventBinding.signalHandler
+    }
+
+    function getSignal(){
+      return eventBinding && eventBinding.signalHandler
         ? eventBinding.signalHandler.execute.__path.join('.')
         : 'NONE';
-      console.log("EventBinding: ", {model: tag, signal: key, get $path(){return key}, set $path(value){}});
+    }
+    function getTag(binding){
+      return binding && binding.model
+        ? binding.model.meta.tag
+        : 'NONE';
     }
   }
 
@@ -647,10 +654,22 @@ class ConsoleEditor {
     const target = editorModel.target;
 
     const setValues = Null({
-      event(list, ...values){
-        list = [].concat(list);
-        const type = list.join('') + values.join('');
-      },
+      event: prop(keys=>{
+        const method = ModuleParser.reducePath(Functions, keys);
+        const binding = {execute: method};
+
+        if(keys.length > 0 && typeof method === "function"){
+          if(target.eventBinding) {
+            target.eventBinding.model = null;
+            target.eventBinding.signalHandler = binding;
+          } else {
+            target.eventBinding = new EventBinding(null, binding);
+          }
+        }
+
+        this.render();
+
+      }),
       model: prop(keys => {
         if(keys.length === 0) {
           if(target.modelBinding)
@@ -682,13 +701,13 @@ class ConsoleEditor {
           if(!target.modelBinding)
             target.modelBinding = binding;
         }
+
+        this.render();
       }),
       ['class']: prop(([key]) => {
-        setTimeout(()=> {
-          target.templateProperties.name = key;
-          target.redrawElement();
-          this.render();
-        },0);
+        target.templateProperties.name = key;
+        target.redrawElement();
+        this.render();
       })
     });
 

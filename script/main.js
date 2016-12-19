@@ -14,8 +14,8 @@ function main() {
     // modulePersistor.save('example', exampleState, modules);
     model.lastSaved = Date.now();
     modulePersistor.save('editor', editorState, modules);
-
   });
+  applicationF.register('alert', () => alert('hej'));
   applicationF.register('loadState', () => reload());
   applicationF.register('clearState', () => {
     // modulePersistor.clean('example');
