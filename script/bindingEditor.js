@@ -603,11 +603,10 @@ class ConsoleEditor {
       modelDef.$define = prop(([key])=>{
         if(!original.hasOwnProperty(key)){
           original.addValueProperty(key, null);
+          this.render();
+        } else {
+          console.warn('Key already exists', key);
         }
-
-        return prop(([value])=>{
-          original[key] = value;
-        });
       });
       models[tag] = modelDef;
       return models
